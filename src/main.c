@@ -234,7 +234,7 @@ int main(void)
 				printf("\n\tInvalid Search Key '%s'!", searchKey);
 			else /* Print Matching Entrys */
 			{
-                system("CLS");
+				system("CLS");
 				printf("\t _______________________________________________________________\n");
 				printf("\t| ID  \t\tColor\t\tManufacturer\t\tDate\t|\n");
 				printf("\t|---------------------------------------------------------------|");
@@ -314,17 +314,17 @@ void createEntryStruct(CarStruct* ptrCarInstance)
 		{
 			printf("\n\tInvalid ID Provided!");
 			printf("\n\tAcceptable IDs are between %d and %d.", MIN_ID, MAX_ID);
-        }
-        fflush(stdin);
+		}
+        	fflush(stdin);
 	} while (invalidInput);
 
 	printf("\n\n\tEnter Car's Color: ");
 	fgets(ptrCarInstance->color, sizeof(ptrCarInstance->color), stdin);
-    fflush(stdin);
+	fflush(stdin);
     
 	printf("\n\n\tEnter Car's Manufacturer: ");
 	fgets(ptrCarInstance->manufact, sizeof(ptrCarInstance->manufact), stdin);
-    fflush(stdin);
+	fflush(stdin);
     
 	/* Remove Leading Line Feed & Uppercase String */
 	if(ptrCarInstance->color[strlen(ptrCarInstance->color)-1] == '\n')
@@ -488,9 +488,9 @@ char* findAllAlphaNumeric(FILE* fp, char col)
 	
 	for (i = 0; i < lnum; i++)
 	{
-	    arr[i] = (char *) malloc(sizeof(char *) * 30);
-	    if (arr[i] == NULL)
-	  	    fatal("Allocating Memory!");
+		arr[i] = (char *) malloc(sizeof(char *) * 30);
+		if (arr[i] == NULL)
+	  		fatal("Allocating Memory!");
 
 		fscanf(fp, "%s %s %s %s\n", carInstance.id, carInstance.color, carInstance.manufact, carInstance.date);
 		col == COLOR_COL ? strcpy(arr[i], carInstance.color) : strcpy(arr[i], carInstance.manufact);
