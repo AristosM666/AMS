@@ -2,8 +2,8 @@
 
 #include <string.h>
 
-static int partition (int arr[], int lo, int hi);
-static void _swap (int *e1, int *e2);
+static long partition (int arr[], int lo, int hi);
+static void _swap (int *first, int *second);
 
 void quicksort(int arr[], int lo, int hi)
 {
@@ -16,42 +16,39 @@ void quicksort(int arr[], int lo, int hi)
 	}
 }
 
-static int partition(int arr[], int lo, int hi)
+static long partition(int arr[], int lo, int hi)
 {
-	int i, storeIndex, pivotIndex, pivotValue;
+	int i, pivotIndex, pivotValue;
 
-	pivotIndex = hi / 2;
-	pivotValue = arr[pivotIndex];
-
-	_swap(&arr[pivotIndex], &arr[hi]);
-	storeIndex = lo;
+	pivotValue = arr[hi];
+	pivotIndex = lo;
 
 	for (i = lo; i <= hi - 1; i++)
 	{
 		if (arr[i] <= pivotValue)
 		{
-			_swap(&arr[i], &arr[storeIndex]);
-			storeIndex++;
+			_swap(&arr[pivotIndex], &arr[i]);
+			pivotIndex++;
 		}
 	}
 	
-	_swap(&arr[storeIndex], &arr[hi]);
-	return storeIndex;
+	_swap(&arr[pivotIndex], &arr[hi]);
+	return pivotIndex;
 }
 
-static void _swap(int *e1, int *e2)
+static void _swap(int *first, int *second)
 {
-	int eTmp = *e1;
-	*e1 = *e2;
-	*e2 = eTmp;
+	int tmp = *first;
+	*first = *second;
+	*second = tmp;
 }
 
-int removeDuplicate(char *arr[], int len)
+size_t removeDuplicate(char *arr[], size_t len)
 {
 	char **current, **end = arr + len - 1;
-	int count = 0;
+	size_t count = 0;
 	
-	for (current = arr; arr <= end; ++arr, current++)
+	for (current = arr + 1; arr < end; arr++, current = arr + 1)
 	{
 		while (current <= end)
 		{
@@ -68,6 +65,5 @@ int removeDuplicate(char *arr[], int len)
 		count++;
 	}
 	
-	return count;
+	return count - 1;
 }
-
