@@ -1,8 +1,9 @@
 #ifndef ALGRTMS_H
 #define ALGRTMS_H
 
-void quicksort (unsigned short arr[], int lo, int hi);
-int removeDuplicate (char *arr[], int len);
+#include <stdlib.h> // included for size_t
+
+void quicksort (int arr[], int lo, int hi);
+size_t removeDuplicate (char *arr[], size_t len);
 
 #endif /* ALGRTMS_H */
-
