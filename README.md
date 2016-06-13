@@ -1,4 +1,4 @@
 # AMS
 
-<h2>Automotive Managment System</h2>
+<p>Automotive Managment System School Project.</p>
 
