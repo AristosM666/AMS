@@ -71,7 +71,7 @@ int main(void)
 		displayMainMenu();
 		fflush(stdin);
 		scanf("%c", &option);
-		getchar(); /* <-------------------------------------------------- */
+		getchar();
 
 		clearScreen();
 
@@ -86,7 +86,7 @@ int main(void)
 			break;
 		case '2':
 			enterCarInfo(&car);
-			getchar(); /* <-------------------------------------------------- */
+			getchar();
 
 			if (searchArchive(archiveFp, car.id, ID_COL, 0) == 0)
 			{
@@ -112,7 +112,7 @@ int main(void)
 			printf("\n\n\tEnter car's ID number: ");
 			fflush(stdin);
 			fgets(car.id, sizeof(car.id), stdin);
-			getchar(); /* <-------------------------------------------------- */
+			getchar();
 
 			operation.entryNum = searchArchive(archiveFp, car.id, ID_COL, 0);
 			if (operation.entryNum == 0)
@@ -139,7 +139,7 @@ int main(void)
 			printf("\n\n\tEnter car's ID number: ");
 			fflush(stdin);
 			fgets(car.id, sizeof(car.id), stdin);
-			getchar(); /* <-------------------------------------------------- */
+			getchar();
 
 			operation.entryNum = searchArchive(archiveFp, car.id, ID_COL, 0);
 			if (operation.entryNum == 0)
@@ -160,7 +160,7 @@ int main(void)
 				
 				i = atoi(car.id);
 				enterCarInfo(&car);
-				getchar(); /* <-------------------------------------------------- */
+				getchar();
 				if (searchArchive(archiveFp, car.id, ID_COL, 0) == 0 || i == atoi(car.id))
 				{
 					operation.opType = WRITE;
@@ -183,7 +183,7 @@ int main(void)
 
 			if (option == '0')
 			{
-				getchar(); /* <-------------------------------------------------- */
+				getchar();
 				break;
 			}
 			else if (option == '1')
@@ -212,7 +212,7 @@ int main(void)
 			free(tmpPtr);
 			tmpPtr = NULL;
 
-			getchar();  /* <-------------------------------------------------- */
+			getchar();
 			printf("\n\n\tEnter Search Term: ");
 			fflush(stdin);
 			fgets(searchKey, sizeof(searchKey), stdin);
@@ -233,8 +233,8 @@ int main(void)
 				printf("\n\tInvalid Search Key '%s'!", searchKey);
 			else /* Print Matching Entrys */
 			{
-                clearScreen();
-                printf("\n\n\t[*] Search Results [*]\n");
+				clearScreen();
+        		printf("\n\n\t[*] Search Results [*]\n");
 				printf("\t _______________________________________________________________\n");
 				printf("\t| ID  \t\tColor\t\tManufacturer\t\tDate\t|\n");
 				printf("\t|---------------------------------------------------------------|");
@@ -382,7 +382,7 @@ void enterCarInfo(Car* car)
         }
 	} while (invalidInput);
 
-	getchar(); /* <-------------------------------------------------- */
+	getchar();
 	printf("\n\n\tEnter Car's Color: ");
 	fflush(stdin);
 	fgets(car->color, sizeof(car->color), stdin);
