@@ -42,7 +42,6 @@ void displayEntrys(FILE* fp);
 size_t getEntryCount(FILE* fp);
 /* Initialize a Car with empty strings and return it */
 Car createNullCar(void);
-/* */
 void enterCarInfo(Car* car);
 /* display error message and exit */
 void fatal(char* errMsg);
