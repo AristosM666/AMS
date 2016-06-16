@@ -264,7 +264,7 @@ int main(void)
           writeToArchive(archiveFp, operation.entryNum, NULL);
         }
         printf("\n\n\tUpdated Archive Successfully!");
-		getchar();
+        getchar();
 		
         car = createNullCar();
         break;
