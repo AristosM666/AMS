@@ -15,16 +15,18 @@ const int MIN_DATE = 1960;
 const int MAX_DATE = 2006;
 const int MIN_ID = 1000;
 const int MAX_ID = 9999;
-typedef struct {
+typedef struct 
+{
   char id[5];
   char color[30];
   char manufact[30];
   char date[5];
 } Car;
 
-typedef struct {
+typedef struct 
+{
   size_t entryNum;
-  enum { INVALID,	REMOVE,	WRITE } opType;
+  enum { INVALID, REMOVE, WRITE } opType;
 } Operation;
 
 /* Returns a string of all UNIQUE numeric values in the DATE or ID fields */
@@ -76,7 +78,8 @@ int main(void)
 
     switch (option)
     {
-      case '1': {
+      case '1': 
+      {
         printf("\n\n\t\t[*] View Archive Entrys [*]\n\n");
         displayEntrys(archiveFp);
 
@@ -84,7 +87,8 @@ int main(void)
         getchar();
         break;
       }
-      case '2': {
+      case '2': 
+      {
         enterCarInfo(&car);
 
         if (searchArchive(archiveFp, car.id, ID_COL, 0) == 0)
@@ -101,7 +105,8 @@ int main(void)
         }
         break;
       }
-      case '3': {
+      case '3': 
+      {
         printf("\n\n\t[*] Remove Car's Entry [*]\n\n");
 
         tmpPtr = findAllNumeric(archiveFp, ID_COL);
@@ -127,7 +132,8 @@ int main(void)
         }
         break;
       }
-      case '4': {
+      case '4': 
+      {
         printf("\n\n\t[*] Modify Car's Entry [*]\n\n");
 	
         tmpPtr = findAllNumeric(archiveFp, ID_COL);
@@ -171,7 +177,8 @@ int main(void)
         }
         break;
       }
-      case '5': {
+      case '5': 
+      {
         while (TRUE) 
         {
           displaySearchMenu();
@@ -203,7 +210,9 @@ int main(void)
             printf("\n\tDates: %s", tmpPtr);
           }
           else
+          {
             continue;
+          }
 
           free(tmpPtr);
           tmpPtr = NULL;
@@ -224,13 +233,16 @@ int main(void)
           operation.entryNum = searchArchive(archiveFp, searchKey, 
                                           option, searchKey[0]);
           if (operation.entryNum == 0)
+          {
             printf("\n\tInvalid Search Key '%s'!", searchKey);
+          }
           else /* Print Matching Entrys */
           {
             clearScreen();
             printf("\n\n\t[*] Search Results [*]\n");
             displayTableHeader();
-            do {
+            do 
+            {
               displayEntry(archiveFp, operation.entryNum);
               operation.entryNum = searchArchive(archiveFp, searchKey, 
                                                 option, searchKey[0]);
@@ -242,7 +254,8 @@ int main(void)
         }
         break;
       } 
-      case '6': {
+      case '6': 
+      {
         printf("\n\n\tUpdating '%s' Archive..", ARCHIVE);
 
         if (operation.opType == WRITE)
@@ -268,8 +281,9 @@ int main(void)
 		
         car = createNullCar();
         break;
-      }
-      case '0': {
+      } 
+      case '0': 
+      {
         fclose(archiveFp);
         cont = FALSE;
       }
@@ -366,7 +380,8 @@ void enterCarInfo(Car* car)
 {
   int i;
 
-  do {
+  do 
+  {
     printf("\n\n\tEnter Entry's ID (%d..%d): ", MIN_ID, MAX_ID);
     getString(car->id, sizeof(car->id));
 
@@ -395,7 +410,8 @@ void enterCarInfo(Car* car)
   for (i = 0; i < strlen(car->manufact); i++)
     car->manufact[i] = toupper(car->manufact[i]);
 
-  do {
+  do 
+  {
     printf("\n\n\tEnter car's date of Manufacture (%d..%d): ", 
             MIN_DATE, MAX_DATE);
     getString(car->date, sizeof(car->date));
@@ -448,21 +464,28 @@ size_t searchArchive(FILE* fp, char* key, char col, char sign)
 
     switch (col)
     {
-      case ID_COL: {
+      case ID_COL: 
+      {
         if ((sign == '>' && atoi(car.id) > atoi(key)) ||
             (sign == '<' && atoi(car.id) < atoi(key)) ||
             (sign == '\0' && !strcmp(car.id, key)))
           return entryCount;
         break;
-      } case COLOR_COL: {
+      } 
+      case COLOR_COL: 
+      {
         if (strncmp(key, car.color, strlen(key)) == 0) 
           return entryCount;
         break;
-      } case MANUFACT_COL: {
+      } 
+      case MANUFACT_COL: 
+      {
         if (strncmp(key, car.manufact, strlen(key)) == 0) 
           return entryCount;
         break;
-      } case DATE_COL: {
+      }
+      case DATE_COL: 
+      {
         if ((sign == '>' && atoi(car.date) > atoi(key)) ||
             (sign == '<' && atoi(car.date) < atoi(key)))
           return entryCount;
