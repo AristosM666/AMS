@@ -34,7 +34,7 @@ char* findAllAlphaNumeric(FILE* fp, char col);
 /* Returns the entry number of the first matching entry */
 size_t searchArchive(FILE* fp, char* key, char col, char sign);
 /* Overwrites/Removes archive entry */
-boolean writeToArchive(FILE* fp, size_t entryNum, Car* car);
+void writeToArchive(FILE* fp, size_t entryNum, Car* car);
 boolean readNextEntry(FILE* fp, Car* car);
 void displayEntry(FILE* fp, size_t entryNum); 
 void displayEntrys(FILE* fp);
@@ -253,26 +253,20 @@ int main(void)
             fprintf(archiveFp, "%s,%s,%s,%s,", car.id, car.color, 
                     car.manufact, car.date);
             fflush(archiveFp);
-            printf("\n\n\tUpdated Archive Successfully!");
           }
           else /* modify entry */
           {
-            if (writeToArchive(archiveFp, operation.entryNum, &car) == FALSE)
-              printf("\n\n\tUpdate Failed :(");
-            else
-              printf("\n\n\tUpdated Archive Successfully!");
+            writeToArchive(archiveFp, operation.entryNum, &car);
           }
         }
         else if (operation.opType == REMOVE)
         {
-          if (writeToArchive(archiveFp, operation.entryNum, NULL) == FALSE)
-            printf("\n\n\tUpdate Failed :(");
-          else
-            printf("\n\n\tUpdated Archive Successfully!");
+          writeToArchive(archiveFp, operation.entryNum, NULL);
         }
-			
+        printf("\n\n\tUpdated Archive Successfully!");
+		getchar();
+		
         car = createNullCar();
-        getchar();
         break;
       }
       case '0': {
@@ -586,7 +580,7 @@ size_t getEntryCount(FILE* fp)
   return entryCount / 4;
 }
 
-boolean writeToArchive(FILE* fp, size_t entryNum, Car* car)
+void writeToArchive(FILE* fp, size_t entryNum, Car* car)
 {
   Car tmpCar = createNullCar();
   FILE* tmpFp;
@@ -634,6 +628,4 @@ boolean writeToArchive(FILE* fp, size_t entryNum, Car* car)
   fp = fopen(ARCHIVE, "r+");
   if (fp == NULL)
     fatal("reopening archive");
-
-  return TRUE;
 }
