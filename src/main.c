@@ -3,7 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
-#include "algrtms.h"
+#include "misc.h"
 
 
 const char ARCHIVE[] = "ams_archive.csv";
