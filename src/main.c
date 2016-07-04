@@ -5,299 +5,93 @@
 #include <math.h>
 #include "algrtms.h"
 
+
 const char ARCHIVE[] = "ams_archive.csv";
+
 
 #define ID_COL '1'
 #define COLOR_COL '2'
 #define MANUFACT_COL '3'
 #define DATE_COL '4'
+
 const int MIN_DATE = 1960;
 const int MAX_DATE = 2006;
 const int MIN_ID = 1000;
 const int MAX_ID = 9999;
-typedef struct 
-{
+
+typedef struct {
   char id[5];
   char color[30];
   char manufact[30];
   char date[5];
-} Car;
+} Entry;
 
-typedef struct 
-{
+
+typedef struct {
   size_t entryNum;
+  Entry entryInfo;
   enum { INVALID, REMOVE, WRITE } opType;
 } Operation;
 
+
+/* display error message and exit */
+void fatal(char* errMsg);
+void displaySplashScreen(void);
+bool goToMainMenu(FILE* archiveFp, Operation* op);
+void displayMainMenu(void);
+void createNewEntry(FILE* archiveFp, Operation* op);
+void removeEntry(FILE* archiveFp, Operation* op);
+void modifyEntry(FILE* archiveFp, Operation* op);
+void updateArchive(FILE* archiveFp, Operation* op);
+bool goToSearchMenu(FILE* archiveFp);
+void displaySearchMenu(void);
+void displayTableHeader(void);
+void displayTableFooter(void);
+char getUserOption(void);
+void clearScreen(void);
+void strToUpper(char* str);
+/* Initialize a Entry with empty strings and return it */
+Entry createNullEntry(void);
+void enterCarInfo(Entry* car);
+Entry getEntryInfo(FILE* fp, size_t entryNum);
+void displayEntryRow(Entry entry);
+void displayAllEntrys(FILE* fp);
+bool readNextEntry(FILE* fp, Entry* car);
+/* Get entry count from archive */
+size_t getEntryCount(FILE* fp);
+/* Returns the entry number of the first matching entry */
+size_t findNextMatchingEntry(FILE* fp, char* key, char col, char operand);
+/* Overwrites/Removes archive entry */
+void writeToArchive(FILE* fp, size_t entryNum, Entry* car);
 /* Returns a string of all UNIQUE numeric values in the DATE or ID fields */
 char* findAllNumeric(FILE* fp, char col);
 /* Returns all UNIQUE alpha-numeric strings in the COLOR or MANUFACT fields */
 char* findAllAlphaNumeric(FILE* fp, char col);
-/* Returns the entry number of the first matching entry */
-size_t searchArchive(FILE* fp, char* key, char col, char sign);
-/* Overwrites/Removes archive entry */
-void writeToArchive(FILE* fp, size_t entryNum, Car* car);
-boolean readNextEntry(FILE* fp, Car* car);
-void displayEntry(FILE* fp, size_t entryNum); 
-void displayEntrys(FILE* fp);
-/* Get entry count from archive */
-size_t getEntryCount(FILE* fp);
-/* Initialize a Car with empty strings and return it */
-Car createNullCar(void);
-void enterCarInfo(Car* car);
-/* display error message and exit */
-void fatal(char* errMsg);
-void clearScreen(void);
-void displaySplashScreen(void);
-void displayMainMenu(void);
-void displaySearchMenu(void);
-void displayTableHeader(void);
-void displayTableFooter(void);
+
 
 int main(void)
 {
-  char option, searchKey[32], *tmpPtr;
-  size_t i; 
-  boolean cont = TRUE;
   FILE* archiveFp;
-  Operation operation;
-  Car car;
+  Operation op;
   
+  system("TITLE Automotive Managment System");
+
+  clearScreen();
   displaySplashScreen();
+  getchar();
   
   archiveFp = fopen(ARCHIVE, "r+");
   if (archiveFp == NULL)
     fatal("opening archive");
   
-  do {
-    displayMainMenu();
-    option = getchar();
-    getchar();
-    
-    clearScreen();
-
-    switch (option)
-    {
-      case '1': 
-      {
-        printf("\n\n\t\t[*] View Archive Entrys [*]\n\n");
-        displayEntrys(archiveFp);
-
-        printf("\n\n\t\tPress Any Key To Continue..");
-        getchar();
-        break;
-      }
-      case '2': 
-      {
-        enterCarInfo(&car);
-
-        if (searchArchive(archiveFp, car.id, ID_COL, 0) == 0)
-        {
-          operation.entryNum = 0;
-          operation.opType = WRITE;
-          printf("\n\n\tEntry Created Successfully!");
-          getchar();
-        }
-        else
-        {
-          printf("\n\tError Entry with ID '%s' already Exists..", car.id);
-          getchar();
-        }
-        break;
-      }
-      case '3': 
-      {
-        printf("\n\n\t[*] Remove Car's Entry [*]\n\n");
-
-        tmpPtr = findAllNumeric(archiveFp, ID_COL);
-        printf("\tEntrys (ID): %s", tmpPtr);
-        free(tmpPtr);
-        tmpPtr = NULL;
-
-        printf("\n\n\tEnter car's ID number: ");
-        getString(car.id, sizeof(car.id));
-
-        operation.entryNum = searchArchive(archiveFp, car.id, ID_COL, 0);
-        if (operation.entryNum == 0)
-        {
-          operation.opType = INVALID;
-          printf("\n\tEntry ID '%s' doesn't exist..", car.id);
-          getchar();
-        }
-        else
-        {
-          operation.opType = REMOVE;
-          printf("\n\tEntry Removed Successfully!");
-          getchar();
-        }
-        break;
-      }
-      case '4': 
-      {
-        printf("\n\n\t[*] Modify Car's Entry [*]\n\n");
-	
-        tmpPtr = findAllNumeric(archiveFp, ID_COL);
-        printf("\tEntrys (ID): %s", tmpPtr);
-        free(tmpPtr);
-        tmpPtr = NULL;
-	
-        printf("\n\n\tEnter car's ID number: ");
-        getString(car.id, sizeof(car.id));
-
-        operation.entryNum = searchArchive(archiveFp, car.id, ID_COL, 0);
-        if (operation.entryNum == 0)
-        {
-          operation.opType = INVALID;
-          printf("\n\tEntry ID '%s' doesn't exist..", car.id);
-          getchar();
-        }
-        else
-        {
-          clearScreen();
-          printf("\n\n\t\t[*] Enter New Entry's Info [*]\n\n");
-          displayTableHeader();
-          displayEntry(archiveFp, operation.entryNum);
-          displayTableFooter();
-				
-          i = atoi(car.id);
-          enterCarInfo(&car);
-          if (searchArchive(archiveFp, car.id, ID_COL, 0) == 0 || 
-                                                i == atoi(car.id))
-          {
-            operation.opType = WRITE;
-            printf("\n\n\tEntry Modified Successfully!");
-            getchar();
-          }
-          else
-          {
-            operation.opType = INVALID;
-            printf("\n\tError Entry with ID '%s' already Exists..", car.id);
-            getchar();
-          }
-        }
-        break;
-      }
-      case '5': 
-      {
-        while (TRUE) 
-        {
-          displaySearchMenu();
-          option = getchar();
-          getchar();
-
-          if (option == '0')
-          {
-            break;
-          }
-          else if (option == '1')
-          {
-            tmpPtr = findAllNumeric(archiveFp, ID_COL);
-            printf("\n\tEntrys (ID): %s", tmpPtr);
-          }
-          else if (option == '2')
-          {
-            tmpPtr = findAllAlphaNumeric(archiveFp, COLOR_COL);
-            printf("\n\tColors: %s", tmpPtr);
-          }
-          else if (option == '3')
-          {
-            tmpPtr = findAllAlphaNumeric(archiveFp, MANUFACT_COL);
-            printf("\n\tManufacturers: %s", tmpPtr);
-          }
-          else if (option == '4')
-          {
-            tmpPtr = findAllNumeric(archiveFp, DATE_COL);
-            printf("\n\tDates: %s", tmpPtr);
-          }
-          else
-          {
-            continue;
-          }
-
-          free(tmpPtr);
-          tmpPtr = NULL;
-
-          printf("\n\n\tEnter Search Term: ");
-          getString(searchKey, sizeof(searchKey));
-
-          /* Remove Line Feed Character */
-          if (searchKey[strlen(searchKey)-1] == '\n') 
-            searchKey[strlen(searchKey)-1] = '\0';
-			
-          /* Make String Uppercase */
-          for (i = 0; i < strlen(searchKey); i++) 
-            searchKey[i] = toupper(searchKey[i]);
-			
-          /* Test if provided value is valid */
-          rewind(archiveFp);
-          operation.entryNum = searchArchive(archiveFp, searchKey, 
-                                          option, searchKey[0]);
-          if (operation.entryNum == 0)
-          {
-            printf("\n\tInvalid Search Key '%s'!", searchKey);
-          }
-          else /* Print Matching Entrys */
-          {
-            clearScreen();
-            printf("\n\n\t[*] Search Results [*]\n");
-            displayTableHeader();
-            do 
-            {
-              displayEntry(archiveFp, operation.entryNum);
-              operation.entryNum = searchArchive(archiveFp, searchKey, 
-                                                option, searchKey[0]);
-            } while(operation.entryNum != 0);
-            displayTableFooter();
-          }
-          printf("\n\n\tPress Any Key To Continue..");
-          getchar();
-        }
-        break;
-      } 
-      case '6': 
-      {
-        printf("\n\n\tUpdating '%s' Archive..", ARCHIVE);
-
-        if (operation.opType == WRITE)
-        {
-          if (operation.entryNum == 0) /* append entry */
-          {
-            fseek(archiveFp, 0, SEEK_END);
-            fprintf(archiveFp, "%s,%s,%s,%s,", car.id, car.color, 
-                    car.manufact, car.date);
-            fflush(archiveFp);
-          }
-          else /* modify entry */
-          {
-            writeToArchive(archiveFp, operation.entryNum, &car);
-          }
-        }
-        else if (operation.opType == REMOVE)
-        {
-          writeToArchive(archiveFp, operation.entryNum, NULL);
-        }
-        printf("\n\n\tUpdated Archive Successfully!");
-        getchar();
-		
-        car = createNullCar();
-        break;
-      } 
-      case '0': 
-      {
-        fclose(archiveFp);
-        cont = FALSE;
-      }
-    }
-  } while (cont);
+  while ( goToMainMenu(archiveFp, &op) );
 
   return EXIT_SUCCESS;
 }
 
+
 void displaySplashScreen(void)
 {
-  system("TITLE Automotive Managment System");
-
-  clearScreen();
   printf("\n\n\n\n\t\t[::] Automotive Management System [::]\n\n");
   printf("\t\tCollege Software Engineering Project.\n\n");
   printf("\t\tWritten By:\tAristos Miliaressis\n");
@@ -305,12 +99,66 @@ void displaySplashScreen(void)
   printf("\t\t\tIn:\tANSI-C\n\n");
   printf("\t\tPress [Enter] to Continue...");
   fflush(stdin);
-  getchar();
 }
+
+
+bool goToMainMenu(FILE* archiveFp, Operation* op)
+{
+  char option;
+  
+  clearScreen();
+  displayMainMenu();
+  option = getUserOption();
+    
+  clearScreen();
+
+  switch (option)
+  {
+  case '1':
+    printf("\n\n\t\t[*] View Archive Entrys [*]\n\n");
+    displayAllEntrys(archiveFp);
+
+    printf("\n\n\t\tPress Any Key To Continue..");
+    getchar();
+    break;
+  
+  case '2':
+    createNewEntry(archiveFp, op);
+    break;
+  
+  case '3':
+    printf("\n\n\t[*] Remove Car's Entry [*]\n\n");
+
+    removeEntry(archiveFp, op);
+    break;
+  
+  case '4':
+    printf("\n\n\t[*] Modify Car's Entry [*]\n\n");
+	
+    modifyEntry(archiveFp, op);
+    break;
+  
+  case '5':
+    while ( goToSearchMenu(archiveFp) );
+    break;
+  
+  case '6':
+    printf("\n\n\tUpdating '%s' Archive..", ARCHIVE);
+
+    updateArchive(archiveFp, op);
+    break;
+   
+  case '0': 
+    fclose(archiveFp);
+    return false; 
+  }
+  
+  return true;
+}
+
 
 void displayMainMenu(void)
 {
-  clearScreen();
   printf("\n\n\t[*] Main Menu [*]");
   printf("\n\n\t[1] - View All Entrys");
   printf("\n\t[2] - Create New Entry");
@@ -323,9 +171,209 @@ void displayMainMenu(void)
   fflush(stdin);
 }
 
+
+void createNewEntry(FILE* archiveFp, Operation* op)
+{
+  enterCarInfo(&op->entryInfo);
+
+  if (findNextMatchingEntry(archiveFp, op->entryInfo.id, ID_COL, 0) == 0)
+  {
+    op->entryNum = 0;
+    op->opType = WRITE;
+    printf("\n\n\tEntry Created Successfully!");
+    getchar();
+  }
+  else
+  {
+    printf("\n\tError Entry with ID '%s' already Exists..", 
+           op->entryInfo.id);
+    getchar();
+  }
+}
+
+
+void removeEntry(FILE* archiveFp, Operation* op)
+{
+  char *tmpPtr;
+  
+  tmpPtr = findAllNumeric(archiveFp, ID_COL);
+  printf("\tEntrys (ID): %s", tmpPtr);
+  free(tmpPtr);
+  tmpPtr = NULL;
+
+  printf("\n\n\tEnter car's ID number: ");
+  getString(op->entryInfo.id, sizeof(op->entryInfo.id));
+
+  op->entryNum = findNextMatchingEntry(archiveFp, 
+                                        op->entryInfo.id, ID_COL, 0);
+  if (op->entryNum == 0)
+  {
+    op->opType = INVALID;
+    printf("\n\tEntry ID '%s' doesn't exist..", op->entryInfo.id);
+  }
+  else
+  {
+    op->opType = REMOVE;
+    printf("\n\tEntry Removed Successfully!");
+  }
+  getchar();
+}
+
+
+void modifyEntry(FILE* archiveFp, Operation* op)
+{
+  char *tmpPtr;
+  size_t i;
+  
+  tmpPtr = findAllNumeric(archiveFp, ID_COL);
+  printf("\tEntrys (ID): %s", tmpPtr);
+  free(tmpPtr);
+  tmpPtr = NULL;
+	
+  printf("\n\n\tEnter car's ID number: ");
+  getString(op->entryInfo.id, sizeof(op->entryInfo.id));
+
+  op->entryNum = findNextMatchingEntry(archiveFp, op->entryInfo.id, ID_COL, 0);
+  if (op->entryNum == 0)
+  {
+    op->opType = INVALID;
+    printf("\n\tEntry ID '%s' doesn't exist..", op->entryInfo.id);
+    getchar();
+  }
+  else
+  {
+    clearScreen();
+    printf("\n\n\t\t[*] Enter New Entry's Info [*]\n\n");
+    displayTableHeader();
+    op->entryInfo = getEntryInfo(archiveFp, op->entryNum);
+    displayEntryRow(op->entryInfo);
+    displayTableFooter();
+				
+    i = atoi(op->entryInfo.id);
+    enterCarInfo(&op->entryInfo);
+    if (findNextMatchingEntry(archiveFp, op->entryInfo.id, ID_COL, 0) == 0 || 
+                                          i == atoi(op->entryInfo.id))
+    {
+      op->opType = WRITE;
+      printf("\n\n\tEntry Modified Successfully!");
+      getchar();
+    }
+    else
+    {
+      op->opType = INVALID;
+      printf("\n\tError Entry with ID '%s' already Exists..", op->entryInfo.id);
+      getchar();
+    }
+  }
+}
+
+
+void updateArchive(FILE* archiveFp, Operation* op)
+{
+  if (op->opType == WRITE)
+  {
+    if (op->entryNum == 0) /* add entry */
+    {
+      fseek(archiveFp, 0, SEEK_END);
+      fprintf(archiveFp, "%s,%s,%s,%s,", op->entryInfo.id, 
+           op->entryInfo.color, op->entryInfo.manufact, op->entryInfo.date);
+      fflush(archiveFp);
+    }
+    else /* modify entry */
+    {
+      writeToArchive(archiveFp, op->entryNum, &op->entryInfo);
+    }
+  }
+  else if (op->opType == REMOVE)
+  {
+    writeToArchive(archiveFp, op->entryNum, NULL);
+  }
+  printf("\n\n\tUpdated Archive Successfully!");
+  getchar();
+		
+  op->entryInfo = createNullEntry();
+}
+
+
+bool goToSearchMenu(FILE* archiveFp)
+{
+  char option, searchKey[32], *tmpPtr;
+  size_t entryNum;
+  Entry entry;
+  
+  clearScreen();
+  displaySearchMenu();
+  option = getUserOption();
+
+  if (option == '0')
+  {
+    return false;
+  }
+  else if (option == '1')
+  {
+    tmpPtr = findAllNumeric(archiveFp, ID_COL);
+    printf("\n\tEntrys (ID): %s", tmpPtr);
+  }
+  else if (option == '2')
+  {
+    tmpPtr = findAllAlphaNumeric(archiveFp, COLOR_COL);
+    printf("\n\tColors: %s", tmpPtr);
+  }
+  else if (option == '3')
+  {
+    tmpPtr = findAllAlphaNumeric(archiveFp, MANUFACT_COL);
+    printf("\n\tManufacturers: %s", tmpPtr);
+  }
+  else if (option == '4')
+  {
+    tmpPtr = findAllNumeric(archiveFp, DATE_COL);
+    printf("\n\tDates: %s", tmpPtr);
+  }
+  else
+  {
+    return true;
+  }
+  free(tmpPtr);
+  tmpPtr = NULL;
+
+  printf("\n\n\tEnter Search Term: ");
+  getString(searchKey, sizeof(searchKey));
+
+  /* Remove Line Feed Character */
+  if (searchKey[strlen(searchKey)-1] == '\n') 
+    searchKey[strlen(searchKey)-1] = '\0';
+  strToUpper(&searchKey[0]);
+			
+  /* Test if provided value is valid */
+  rewind(archiveFp);
+  entryNum = findNextMatchingEntry(archiveFp, searchKey, 
+                                        option, searchKey[0]);
+  if (entryNum == 0)
+  {
+    printf("\n\tInvalid Search Key '%s'!", searchKey);
+  }
+  else /* Print Matching Entrys */
+  {
+    clearScreen();
+    printf("\n\n\t[*] Search Results [*]\n");
+    displayTableHeader();
+    do 
+    {
+      entry = getEntryInfo(archiveFp, entryNum);
+      displayEntryRow(entry);
+      entryNum = findNextMatchingEntry(archiveFp, searchKey, 
+                                            option, searchKey[0]);
+    } while(entryNum != 0);
+    displayTableFooter();
+  }
+  printf("\n\n\tPress Any Key To Continue..");
+  getchar();
+  return true;
+}
+
+
 void displaySearchMenu(void)
 {
-  clearScreen();
   printf("\n\n\t[*] Search Archive [*]");
   printf("\n\n\t[1] - Search By ID");
   printf("\n\t[2] - Search By Color");
@@ -336,6 +384,7 @@ void displaySearchMenu(void)
   fflush(stdin);
 }
 
+
 void displayTableHeader(void)
 {
   printf("\t _______________________________________________________________\n");
@@ -343,10 +392,12 @@ void displayTableHeader(void)
   printf("\t|---------------------------------------------------------------|");
 }
 
+
 void displayTableFooter(void)
 {
   printf("\n\t|_______________________________________________________________|");
 }
+
 
 void fatal(char* errMsg)
 {
@@ -359,14 +410,43 @@ void fatal(char* errMsg)
   exit(EXIT_FAILURE);
 }
 
+
 void clearScreen(void)
 {
   printf("\033[H\033[2J");
 }
 
-Car createNullCar(void)
+
+inline char getUserOption(void)
 {
-  Car car;
+  char ch, *str = malloc(30);
+  size_t i = 0;
+  
+  (void) getString(str, 30);
+  do {
+    ch = str[i];
+    if (ch != ' ' && ch != '\n' && ch != '\t')
+      return ch;
+    i++;
+  } while(ch != '\n');
+  
+  free(str);
+  str = NULL;
+  return ch;
+}
+
+
+void strToUpper(char* str)
+{
+  size_t i;
+  for (i = 0; i < strlen(str); i++)
+    str[i] = toupper(str[i]);
+}
+
+
+Entry createNullEntry(void)
+{
+  Entry car;
 
   car.id[0] = '\0';
   car.color[0] = '\0';
@@ -376,7 +456,8 @@ Car createNullCar(void)
   return car;
 }
 
-void enterCarInfo(Car* car)
+
+void enterCarInfo(Entry* car)
 {
   int i;
 
@@ -390,7 +471,7 @@ void enterCarInfo(Car* car)
 		
     printf("\n\tInvalid ID Provided!");
     printf("\n\tAcceptable IDs are between %d and %d.", MIN_ID, MAX_ID);
-  } while (TRUE);
+  } while (true);
 	
   printf("\n\n\tEnter Car's Color: ");
   getString(car->color, sizeof(car->color));
@@ -398,17 +479,15 @@ void enterCarInfo(Car* car)
   printf("\n\n\tEnter Car's Manufacturer: ");
   getString(car->manufact, sizeof(car->manufact));
     
-  /* Remove Leading Line Feed & Uppercase String */
+  /* Remove Leading Line Feed */
   if(car->color[strlen(car->color)-1] == '\n')
     car->color[strlen(car->color)-1] = '\0';
-  for (i = 0; i < strlen(car->color); i++)
-    car->color[i] = toupper(car->color[i]);
+  strToUpper(&car->color[0]);
 
-  /* Remove Leading Line Feed & Uppercase String */
+  /* Remove Leading Line Feed */
   if(car->manufact[strlen(car->manufact)-1] == '\n')
     car->manufact[strlen(car->manufact)-1] = '\0';
-  for (i = 0; i < strlen(car->manufact); i++)
-    car->manufact[i] = toupper(car->manufact[i]);
+  strToUpper(&car->manufact[0]);
 
   do 
   {
@@ -421,40 +500,74 @@ void enterCarInfo(Car* car)
 			
     printf("\n\tInvalid Date Provided!");
     printf("\n\tAcceptable Dates are between %d and %d.", MIN_DATE, MAX_DATE);
-  } while (TRUE);
+  } while (true);
 }
 
-void displayEntrys(FILE* fp)
+
+Entry getEntryInfo(FILE* fp, size_t entryNum)
 {
+  Entry entry = createNullEntry();
+  int i;
+
+  rewind(fp);
+  for (i = 1; i <= entryNum; ++i)
+    readNextEntry(fp, &entry);
+  
+  return entry;
+}
+
+
+void displayEntryRow(Entry entry)
+{
+  char tmp[30];
+  
+  strcpy(tmp, entry.manufact);
+  if (strlen(tmp) < 8)
+    strcat(tmp, "\t");
+	
+  printf("\n\t| %s\t\t%s\t\t%s\t\t%s\t|", 
+         entry.id, entry.color, tmp, entry.date);
+}
+
+
+void displayAllEntrys(FILE* fp)
+{
+  Entry entry;
   size_t i;
 	
   rewind(fp);
   displayTableHeader();
   for (i = 0; i < getEntryCount(fp); i++)
-    displayEntry(fp, i);
+  {
+    entry = getEntryInfo(fp, i);
+    displayEntryRow(entry);
+  }
   displayTableFooter();
 }
 
-boolean readNextEntry(FILE* fp, Car* car)
+
+bool readNextEntry(FILE* fp, Entry* car)
 {
-  if (!freadUntilDelim(fp, ',', &car->id[0]))
-    return FALSE;
-  else if (!freadUntilDelim(fp, ',', &car->color[0]))
-    return FALSE;
-  else if (!freadUntilDelim(fp, ',', &car->manufact[0]))
-    return FALSE;
-  else if (!freadUntilDelim(fp, ',', &car->date[0]))
-    return FALSE;
+  if (!csvReadNextVal(fp, &car->id[0]))
+    return false;
+  else if (!csvReadNextVal(fp, &car->color[0]))
+    return false;
+  else if (!csvReadNextVal(fp, &car->manufact[0]))
+    return false;
+  else if (!csvReadNextVal(fp, &car->date[0]))
+    return false;
   else
-    return TRUE;
+    return true;
 }
 
-size_t searchArchive(FILE* fp, char* key, char col, char sign)
+
+size_t findNextMatchingEntry(FILE* fp, char* key, char col, char operand)
 {
   static size_t entryCount = 0;
-  Car car;
-
-  if ((col == ID_COL || col == DATE_COL) && sign != '\0')
+  Entry car;
+	
+  strToUpper(key);
+  if ((col == ID_COL || col == DATE_COL) && operand != '\0')
     key++;
 
   while(!feof(fp))
@@ -466,9 +579,9 @@ size_t searchArchive(FILE* fp, char* key, char col, char sign)
     {
       case ID_COL: 
       {
-        if ((sign == '>' && atoi(car.id) > atoi(key)) ||
-            (sign == '<' && atoi(car.id) < atoi(key)) ||
-            (sign == '\0' && !strcmp(car.id, key)))
+        if ((operand == '>' && atoi(car.id) > atoi(key)) ||
+            (operand == '<' && atoi(car.id) < atoi(key)) ||
+            (operand == '\0' && !strcmp(car.id, key)))
           return entryCount;
         break;
       } 
@@ -486,8 +599,8 @@ size_t searchArchive(FILE* fp, char* key, char col, char sign)
       }
       case DATE_COL: 
       {
-        if ((sign == '>' && atoi(car.date) > atoi(key)) ||
-            (sign == '<' && atoi(car.date) < atoi(key)))
+        if ((operand == '>' && atoi(car.date) > atoi(key)) ||
+            (operand == '<' && atoi(car.date) < atoi(key)))
           return entryCount;
       }
     }
@@ -497,21 +610,6 @@ size_t searchArchive(FILE* fp, char* key, char col, char sign)
   return entryCount;
 }
 
-void displayEntry(FILE* fp, size_t entryNum)
-{
-  Car car = createNullCar();
-  int i;
-
-  rewind(fp);
-  for (i = 1; i <= entryNum; ++i)
-    readNextEntry(fp, &car);
-
-  if (strlen(car.manufact) < 8)
-    strcat(car.manufact, "\t");
-	
-  printf("\n\t| %s\t\t%s\t\t%s\t\t%s\t|", car.id, car.color, 
-          car.manufact, car.date);
-}
 
 char* findAllNumeric(FILE* fp, char col)
 {
@@ -520,7 +618,7 @@ char* findAllNumeric(FILE* fp, char col)
   int* entrys = (int*) malloc(entryCount * sizeof(int));
   char tmpBuf[10];
   size_t i;
-  Car car;
+  Entry car;
 	
   if (buf == NULL)
     fatal("allocating memory");
@@ -546,13 +644,14 @@ char* findAllNumeric(FILE* fp, char col)
   return buf;
 }
 
+
 char* findAllAlphaNumeric(FILE* fp, char col)
 {
   const size_t entryCount = getEntryCount(fp);
   char** arr = (char**) malloc(entryCount * sizeof(char*));
   char* buf = (char*) malloc(entryCount * 32);
   size_t i;
-  Car car;
+  Entry car;
 
   if (arr == NULL || buf == NULL)
     fatal("allocating memory");
@@ -586,6 +685,7 @@ char* findAllAlphaNumeric(FILE* fp, char col)
   return buf;
 }
 
+
 size_t getEntryCount(FILE* fp)
 {
   size_t entryCount = 0;
@@ -603,9 +703,10 @@ size_t getEntryCount(FILE* fp)
   return entryCount / 4;
 }
 
-void writeToArchive(FILE* fp, size_t entryNum, Car* car)
+
+void writeToArchive(FILE* fp, size_t entryNum, Entry* car)
 {
-  Car tmpCar = createNullCar();
+  Entry tmpCar = createNullEntry();
   FILE* tmpFp;
   const char tmpFileName[] = "fRpZX6EPZV";
   int ret;
