@@ -1,5 +1,5 @@
-#ifndef ALGRTMS_H
-#define ALGRTMS_H
+#ifndef MISC_H
+#define MISC_H
 
 #include <stdlib.h> /* included for size_t */
 #include <stdio.h> /* included for FILE */
@@ -12,4 +12,4 @@ boolean freadUntilDelim(FILE* fp, char delim, char* dest);
 size_t getString(char* dest, size_t size);
 boolean isIntBetween(char* src, int min, int max);
 
-#endif /* ALGRTMS_H */
+#endif /* MISC_H */
