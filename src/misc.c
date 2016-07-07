@@ -1,9 +1,12 @@
 #include "misc.h"
 
 #include <string.h>
+#include <ctype.h>
+
 
 static long partition(int arr[], int lo, int hi);
 static void swap(int *first, int *second);
+
 
 void quicksort(int arr[], int lo, int hi)
 {
@@ -15,6 +18,7 @@ void quicksort(int arr[], int lo, int hi)
     quicksort(&arr[0], p + 1, hi);
   }
 }
+
 
 static long partition(int arr[], int lo, int hi)
 {
@@ -36,12 +40,14 @@ static long partition(int arr[], int lo, int hi)
   return pivotIndex;
 }
 
+
 static void swap(int *first, int *second)
 {
   int tmp = *first;
   *first = *second;
   *second = tmp;
 }
+
 
 size_t removeDuplicate(char *arr[], size_t nmemb)
 {
@@ -68,7 +74,8 @@ size_t removeDuplicate(char *arr[], size_t nmemb)
   return count;
 }
 
-boolean freadUntilDelim(FILE* fp, char delim, char* dest)
+
+bool csvReadNextVal(FILE* fp, char* dest)
 {
   size_t i = 0;
   char ch;
@@ -76,17 +83,18 @@ boolean freadUntilDelim(FILE* fp, char delim, char* dest)
   while (!feof(fp))
   {
     ch = fgetc(fp);
-    if (ch == delim)
+    if (ch == ',')
     {
       dest[i] = '\0';
-      return TRUE;
+      return true;
     }
     dest[i] = ch;
     i++;
   }
 
-  return FALSE;
+  return false;
 }
+
 
 size_t getString(char* dest, size_t size)
 {
@@ -98,22 +106,74 @@ size_t getString(char* dest, size_t size)
 	
   if (len == size - 1)
     getchar();
+    
+  /* Remove Line Feed Character */
+  if (dest[strlen(dest)-1] == '\n')
+  {
+    dest[strlen(dest)-1] = '\0';
+    len--;
+  }
 	
   return len;
 }
 
-boolean isIntBetween(char* src, int min, int max)
+
+bool isIntBetween(char* src, int min, int max)
 {
   size_t i;	
 	
   /* Test if all characters are digits */
   for(i = 0; i < strlen(src); i++)
     if (!isdigit(*(src + i)))
-      return FALSE;
+      return false;
 
   /* Test if value is within min/max range */
   if (atoi(src) < min || atoi(src) > max)
-    return FALSE;
+    return false;
 	
-  return TRUE;
+  return true;
+}
+
+
+void parseWhiteSpace(char* str)
+{
+  size_t i = 0;
+  char ch;
+  
+  do {
+    ch = str[i];
+    if (ch == ' ' || ch == '\t' || ch == '\n') 
+    {
+      size_t j;
+      for (j = i; j < strlen(str); j++)
+        str[j] = str[j+1];
+    }
+    else i++;
+  } while (ch != '\0');
+}
+
+
+void fatal(char* errMsg)
+{
+  fprintf(stderr, "\n\n\t\tFailed while %s!", errMsg);
+  perror("\n\t\tERROR");
+  printf("\n\t\tPress [Enter] to Exit..");
+  getchar();
+
+  clearScreen();
+  exit(EXIT_FAILURE);
+}
+
+
+void clearScreen(void)
+{
+  printf("\033[H\033[2J");
+}
+
+
+void strToUpper(char* str)
+{
+  size_t i;
+  for (i = 0; i < strlen(str); i++)
+    str[i] = toupper(str[i]);
 }
