@@ -3,13 +3,14 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdio.h>
 
 
 static ssize_t partition (int arr[], ssize_t lo, ssize_t hi);
 static void swap (int *first, int *second);
 
 
-void 
+void
 quicksort (int arr[], ssize_t lo, ssize_t hi)
 {
     ssize_t p;
@@ -22,7 +23,7 @@ quicksort (int arr[], ssize_t lo, ssize_t hi)
 }
 
 
-static ssize_t 
+static ssize_t
 partition (int arr[], ssize_t lo, ssize_t hi)
 {
     ssize_t i, pivotIndex;
@@ -45,7 +46,7 @@ partition (int arr[], ssize_t lo, ssize_t hi)
 }
 
 
-static void 
+static void
 swap (int *first, int *second)
 {
     int tmp = *first;
@@ -54,22 +55,22 @@ swap (int *first, int *second)
 }
 
 
-size_t 
+size_t
 removeDuplicateStr (char *arr[], size_t nmemb)
 {
     char **current, **end = arr + nmemb - 1;
     size_t count = 0;
 
-    for (current = arr + 1; arr < end; arr++, current = arr + 1) 
+    for (current = arr + 1; arr < end; arr++, current = arr + 1)
       {
-        while (current <= end) 
+        while (current <= end)
           {
-            if (!strcmp (*current, *arr)) 
+            if (!strcmp (*current, *arr))
               {
-                strcpy (*current, *end);
+                (void) strcpy (*current, *end);
                 end--;
-              } 
-            else 
+              }
+            else
                 current++;
           }
         count++;
@@ -79,22 +80,22 @@ removeDuplicateStr (char *arr[], size_t nmemb)
 }
 
 
-size_t 
+size_t
 removeDuplicate (int arr[], size_t nmemb)
 {
     int *current, *end = arr + nmemb - 1;
     size_t count = 0;
 
-    for (current = arr + 1; arr < end; arr++, current = arr + 1) 
+    for (current = arr + 1; arr < end; arr++, current = arr + 1)
       {
-        while (current <= end) 
+        while (current <= end)
           {
-            if (*current == *arr) 
+            if (*current == *arr)
               {
                 *current = *end;
                 end--;
-              } 
-            else 
+              }
+            else
                 current++;
           }
         count++;
@@ -104,7 +105,7 @@ removeDuplicate (int arr[], size_t nmemb)
 }
 
 
-bool 
+bool
 csvReadNextVal (FILE *fp, char *dest)
 {
     char ch;
@@ -125,89 +126,88 @@ csvReadNextVal (FILE *fp, char *dest)
 }
 
 
-size_t 
+size_t
 getString (char *dest, size_t size)
 {
     size_t len;
-	
-    fflush (stdin);
-    fgets (dest, (int) size, stdin);
+    char ch;
+
+    (void) fflush (stdin);
+    (void) fgets (dest, (int) size, stdin);
     len = strlen (dest);
-	
+
     if (len == size - 1)
-        getchar ();
-    
-    /* Remove Line Feed Character */
+        (void) getchar ();
+
     if (dest[strlen (dest)-1] == '\n')
       {
         dest[strlen (dest)-1] = '\0';
         len--;
       }
-	
+    
+    __fpurge (stdin);
     return len;
 }
 
 
-bool 
+bool
 isIntBetween (char *src, ssize_t min, ssize_t max)
 {
-    size_t i;	
-	
-    /* Test if all characters are digits */
+    size_t i;
+
     for(i = 0; i < strlen (src); i++)
       {
         if (!isdigit ( *(src + i) ))
             return false;
       }
 
-    /* Test if value is within min/max range */
     return !(atol (src) < min || atol (src) > max);
 }
 
 
-void 
+void
 parseWhiteSpace (char *str)
 {
     size_t i = 0;
     char ch;
-  
+
     do
       {
         ch = str[i];
-        if (ch == ' ' || ch == '\t' || ch == '\n') 
+        if (ch == ' ' || ch == '\t' || ch == '\n')
           {
             size_t j;
             for (j = i; j < strlen (str); j++)
                 str[j] = str[j+1];
           }
-        else 
+        else
             i++;
       }
     while (ch != '\0');
 }
 
 
-void 
+void
 fatal (char *errMsg)
 {
-    fprintf (stderr, "\n\n\t\tFailed while %s!", errMsg);
+    (void) fprintf (stderr, "\n\n\t\tFailed while %s!", errMsg);
     perror ("\n\t\tERROR");
-    printf ("\n\t\tPress [Enter] to Exit..");
-    getchar ();
+    (void) printf ("\n\t\tPress [Enter] to Exit..");
+    (void) getchar ();
 
     clearScreen ();
     exit (EXIT_FAILURE);
 }
 
 
-void 
+void
 clearScreen (void)
 {
-    printf ("\033[H\033[2J");
+    (void) printf ("\033[H\033[2J");
 }
 
 
-void 
+void
 strToUpper (char *str)
 {
     size_t i;
