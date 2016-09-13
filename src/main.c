@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <math.h>
 #include <sys/types.h>
 #include "misc.h"
 
@@ -28,6 +27,7 @@ struct Entry
   char date[5];
 };
 typedef struct Entry entry_t;
+
 
 #define MAX_ENTRYS 512
 entry_t *entryTable[MAX_ENTRYS];
@@ -69,14 +69,13 @@ void loadArchive (FILE *archiveFp);
 bool lookupEntryByID (const char *const id, entry_t *const entry);
 void copyEntry (entry_t *const dest, const entry_t *const src);
 entry_t **findAllMatching (char *key, const char col, const char operand);
-size_t getIndexFromID (const char *const entryId);
+ssize_t getIndexFromID (const char *const entryId);
 void writeToArchive (FILE **archiveFp, const char *const entryId, const entry_t *const entry);
 
 
 int
 main (void)
 {
-    entry_t entry;
     FILE *archiveFp;
     operation_t op;
     
@@ -217,7 +216,7 @@ void
 printAllIDs (void)
 {
     int *idList = (int*) malloc (entryCount * sizeof (int*));
-    size_t i;
+    ssize_t i;
     
     if (entryCount == 0 || idList == NULL)
         return;
@@ -240,7 +239,7 @@ void
 printAllColors (void)
 {
     char **colorList = (char**) malloc ((entryCount + 1) * sizeof (char*));
-    size_t i;
+    ssize_t i;
 
     if (entryCount == 0 || colorList == NULL)
         return;
@@ -264,7 +263,7 @@ void
 printAllManufacts (void)
 {
     char **manufactList = (char**) malloc ((entryCount + 1) * sizeof (char*));
-    size_t i;
+    ssize_t i;
 
     if (entryCount == 0 || manufactList == NULL)
         return;
@@ -288,7 +287,7 @@ void
 printAllDates (void)
 {
     int *dateList = (int*) malloc ((entryCount + 1) * sizeof (int));
-    size_t i, j;
+    ssize_t i, j;
     
     if (entryCount == 0 || dateList == NULL)
         return;
@@ -372,7 +371,7 @@ modifyEntry (operation_t *const op)
         displayTableHeader ();
         displayEntryRow (op->entryInfo);
         displayTableFooter ();
-        printf("\t");
+        printf ("\t");
 
         i = atoi (op->entryInfo->id);
         (void) strcpy (op->oldId, op->entryInfo->id);
@@ -396,7 +395,7 @@ modifyEntry (operation_t *const op)
 void
 updateArchive (FILE **archiveFp, operation_t *const op)
 {
-    size_t index;
+    ssize_t index;
 
     if (op->opType == APPEND)
       {
@@ -623,7 +622,7 @@ readEntry (FILE *archiveFp, entry_t *const entry)
 bool
 lookupEntryByID (const char *const id, entry_t *const entry)
 {
-    size_t i;
+    ssize_t i;
 
     for (i = 0; i < entryCount; i++)
       {
@@ -653,10 +652,10 @@ entry_t **
 findAllMatching (char *key, const char col, const char operand)
 {
     entry_t **resultTable = (entry_t**) malloc (entryCount * sizeof (entry_t*));
-    size_t i, resultCount = 0;
+    ssize_t i, resultCount = 0;
 
     strToUpper (key);
-    if ( (col == ID_COL || col == DATE_COL) && operand != '\0' )
+    if ((col == ID_COL || col == DATE_COL) && operand != '\0')
         key++;
 
     for (i = 0; i < entryCount; i++)
@@ -708,15 +707,16 @@ findAllMatching (char *key, const char col, const char operand)
 }
 
 
-size_t
+ssize_t
 getIndexFromID (const char *const entryId)
 {
-  size_t index;
+  ssize_t index;
   for (index = 0; index < entryCount; index++)
     {
       if (!strcmp (entryId, entryTable[index]->id))
           return index;
     }
+    return -1;
 }
 
 
