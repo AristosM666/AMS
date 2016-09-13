@@ -1,6 +1,10 @@
 # AMS
 
 <p>Automotive Managment System School Project.</p>
-
-<b>Compile: </b> $ gcc -pedantic -o ams src/main.c src/algrtms.c
-
+<br/>
+College Software Engineering Project.<br/>
+<br/>
+<b>Written By</b>:    Aristos Miliaressis<br/>
+        <b>At</b>:    Iek XINI Athens<br/>
+        <b>In</b>:    ANSI-C<br/>
+      <b>Date</b>:    10/10/2015<br/>
