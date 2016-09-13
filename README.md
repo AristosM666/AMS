@@ -4,7 +4,7 @@
 <br/>
 College Software Engineering Project.<br/>
 <br/>
-<b>Written By</b>:&emsp;&emsp;&emsp;Aristos Miliaressis<br/>
-&emsp;&emsp;&emsp;&emsp;<b>At</b>:&emsp;&emsp;&emsp;Iek XINI Athens<br/>
-&emsp;&emsp;&emsp;&emsp;<b>In</b>:&emsp;&emsp;&emsp;ANSI-C<br/>
-<pre>&#9;<b>Date</b>:&emsp;&emsp;&emsp;10/10/2015<br/></pre>
+<pre><b>Written By</b>:&#9;Aristos Miliaressis<br/></pre>
+<pre>&#9;<b>At</b>:&#9;Iek XINI Athens<br/></pre>
+<pre>&#9;<b>In</b>:&#9;ANSI-C<br/></pre>
+<pre>&#9;<b>Date</b>:&#9;10/10/2015<br/></pre>
