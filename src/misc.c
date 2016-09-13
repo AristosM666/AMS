@@ -3,11 +3,11 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include <stdio.h>
+#include <stdio_ext.h>
 
 
 static ssize_t partition (int arr[], ssize_t lo, ssize_t hi);
-static void swap (int *first, int *second);
+static void swap (int *lval, int *rval);
 
 
 void
@@ -16,9 +16,9 @@ quicksort (int arr[], ssize_t lo, ssize_t hi)
     ssize_t p;
     if (lo < hi)
       {
-        p = partition (&arr[0], lo, hi);
-        quicksort (&arr[0], lo, p - 1);
-        quicksort (&arr[0], p + 1, hi);
+        p = partition (arr, lo, hi);
+        quicksort (arr, lo, p - 1);
+        quicksort (arr, p + 1, hi);
       }
 }
 
@@ -47,11 +47,11 @@ partition (int arr[], ssize_t lo, ssize_t hi)
 
 
 static void
-swap (int *first, int *second)
+swap (int *lval, int *rval)
 {
-    int tmp = *first;
-    *first = *second;
-    *second = tmp;
+    int tmp = *lval;
+    *lval = *rval;
+    *rval = tmp;
 }
 
 
@@ -130,7 +130,6 @@ size_t
 getString (char *dest, size_t size)
 {
     size_t len;
-    char ch;
 
     (void) fflush (stdin);
     (void) fgets (dest, (int) size, stdin);
@@ -155,7 +154,7 @@ isIntBetween (char *src, ssize_t min, ssize_t max)
 {
     size_t i;
 
-    for(i = 0; i < strlen (src); i++)
+    for (i = 0; i < strlen (src); i++)
       {
         if (!isdigit ( *(src + i) ))
             return false;
