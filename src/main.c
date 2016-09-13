@@ -1,29 +1,3 @@
-/* [08/30/2016 06:19:47 PM]
-Functionality:
-  use ESC to send cancel signal when waiting for user input
-  encrypt archive and require password
-  chose archive path based on os (linux, windows, mac)
-  manage multiple archives
-
-Test: (valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all -v ./ams)
-  fuzz input at [2], [3], [4], [[5:1], [5:2], [5:3], [5:4]]
-  enterCarInfo - 
-  search - 
-==7890== Source and destination overlap in strcpy(0x51fcce5, 0x51fcce5)
-==7890==    at 0x4C2E272: strcpy (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==7890==    by 0x40284F: removeDuplicateStr (misc.c:70)
-==7890==    by 0x401371: printAllColors (main.c:262)
-==7890==    by 0x401A67: goToSearchMenu (main.c:457)
-==7890==    by 0x4010F5: goToMainMenu (main.c:193)
-==7890==    by 0x400ED2: main (main.c:106)
-==7890== 
-==7890== Conditional jump or move depends on uninitialised value(s)
-==7890==    at 0x401F1E: displayEntryTable (main.c:608)
-==7890==    by 0x401AC2: goToSearchMenu (main.c:474)
-==7890==    by 0x4010F5: goToMainMenu (main.c:193)
-==7890==    by 0x400ED2: main (main.c:106)
-==7890==
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
