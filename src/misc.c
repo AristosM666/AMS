@@ -64,7 +64,7 @@ removeDuplicateStr (char *arr[], size_t nmemb)
             if (!strcmp (*current, *arr))
               {
                 if (current != end)
-                    (void) strcpy (*current, *end);
+                    strcpy (*current, *end);
                 end--;
               }
             else
@@ -126,12 +126,12 @@ csvReadNextVal (FILE *fp, char *dest)
 size_t
 getString (char *dest, size_t size)
 {
-    (void) fflush (stdin);
-    (void) fgets (dest, (int) size, stdin);
+    fflush (stdin);
+    fgets (dest, (int) size, stdin);
     size_t len = strlen (dest);
 
     if (len == size - 1)
-        (void) getchar ();
+        getchar ();
 
     if (dest[strlen (dest)-1] == '\n')
       {
@@ -181,10 +181,10 @@ parseWhiteSpace (char *str)
 void
 fatal (char *errMsg)
 {
-    (void) fprintf (stderr, "\n\n\t\tFailed while %s!", errMsg);
+    fprintf (stderr, "\n\n\t\tFailed while %s!", errMsg);
     perror ("\n\t\tERROR");
-    (void) printf ("\n\t\tPress [Enter] to Exit..");
-    (void) getchar ();
+    printf ("\n\t\tPress [ Enter ] to Exit..");
+    getchar ();
 
     clearScreen ();
     exit (EXIT_FAILURE);
@@ -194,7 +194,7 @@ fatal (char *errMsg)
 void
 clearScreen (void)
 {
-    (void) printf ("\033[H\033[2J");
+    printf ("\033[H\033[2J");
 }
 
 
