@@ -112,7 +112,7 @@ displaySplashScreen (void)
     (void) printf ("\t\tCollege Software Engineering Project.\n\n");
     (void) printf ("\t\tWritten By:\tAristos Miliaressis\n");
     (void) printf ("\t\t\tAt:\tIek XINI Athens\n");
-    (void) printf ("\t\t\tIn:\tC11\n");
+    (void) printf ("\t\t\tIn:\tStandard C 11\n");
     (void) printf ("\t\t\tDate:\t10/10/2015\n\n\t");
     pause ();
 }
@@ -122,7 +122,7 @@ void
 pause (void)
 {
     (void) fflush (stdin);
-    (void) printf ("\tPress [Enter] to continue...");
+    (void) printf ("\tPress [ Enter ] to continue...");
     (void) getchar ();
 }
 
