@@ -1,7 +1,18 @@
+/* [08/30/2016 06:19:47 PM]
+Functionality:
+  use ESC to send cancel signal when waiting for user input
+  encrypt archive and require password
+  chose archive path based on os (linux, windows, mac)
+  manage multiple archives
+
+Test: (valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all ./ams)
+  fuzz enterCarInfo & getSearchTerm
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include "misc.h"
 
@@ -14,10 +25,10 @@ const char ARCHIVE[] = "ams_archive.csv";
 #define MANUFACT_COL '3'
 #define DATE_COL '4'
 
-const short int MIN_DATE = 1960;
-const short int MAX_DATE = 2006;
-const short int MIN_ID = 1000;
-const short int MAX_ID = 9999;
+const uint16_t MIN_DATE = 1960;
+const uint16_t MAX_DATE = 2006;
+const uint16_t MIN_ID = 1000;
+const uint16_t MAX_ID = 9999;
 
 struct Entry
 {
@@ -31,7 +42,7 @@ typedef struct Entry entry_t;
 
 #define MAX_ENTRYS 512
 entry_t *entryTable[MAX_ENTRYS];
-ssize_t entryCount = 0;
+size_t entryCount = 0;
 
 
 struct Operation
@@ -69,33 +80,34 @@ void loadArchive (FILE *archiveFp);
 bool lookupEntryByID (const char *const id, entry_t *const entry);
 void copyEntry (entry_t *const dest, const entry_t *const src);
 entry_t **findAllMatching (char *key, const char col, const char operand);
-ssize_t getIndexFromID (const char *const entryId);
+intmax_t getIndexFromID (const char *const entryId);
 void writeToArchive (FILE **archiveFp, const char *const entryId, const entry_t *const entry);
 
 
 int
 main (void)
 {
-    FILE *archiveFp;
-    operation_t op;
+    operation_t op = {0};
     
-    op.opType = INVALID;
-    op.entryInfo = (entry_t*) malloc (sizeof (entry_t));
-
-    (void) system ("TITLE Automotive Managment System");
+    op.entryInfo = (entry_t*) calloc (1U, sizeof (entry_t));
+    if (op.entryInfo == NULL)
+        fatal ("allocating memory");
 
     clearScreen ();
     displaySplashScreen ();
 
-    archiveFp = fopen (ARCHIVE, "a+");
+    FILE *archiveFp = fopen (ARCHIVE, "a+");
     if (archiveFp == NULL)
         fatal ("opening archive");
     loadArchive (archiveFp);
 
     while ( goToMainMenu (&archiveFp, &op) );
 
-    for (; entryCount >= 0; entryCount--)
+    while (entryCount > 0)
+      {
+        entryCount--;
         free (entryTable[entryCount]);
+      }
     free (op.entryInfo);
     (void) fclose (archiveFp);
 
@@ -128,13 +140,13 @@ pause (void)
 void
 loadArchive (FILE *archiveFp)
 {
-    entry_t *entry = (entry_t*) malloc (sizeof (entry_t));
+    entry_t *entry = (entry_t*) calloc (1U, sizeof (entry_t));
 
     while (readEntry (archiveFp, entry))
       {
         entryTable[entryCount] = entry;
         entryCount++;
-        entry = (entry_t*) malloc (sizeof (entry_t));
+        entry = (entry_t*) calloc (1U, sizeof (entry_t));
       }
 
     free (entry);
@@ -145,17 +157,15 @@ loadArchive (FILE *archiveFp)
 bool
 goToMainMenu (FILE **archiveFp, operation_t *const op)
 {
-    char option;
-
     clearScreen ();
     displayMainMenu ();
-    option = getUserOption ();
+    char option = getUserOption ();
 
     clearScreen ();
     switch (option)
       {
       case '1':
-        (void) printf ("\n\n\t[*] Display All (%lu) Entrys [*]\n\n", entryCount);
+        (void) printf ("\n\n\t[*] Display All (%zu) Entrys [*]\n\n", entryCount);
 
         displayEntryTable (entryTable);
         break;
@@ -215,8 +225,8 @@ displayMainMenu (void)
 void
 printAllIDs (void)
 {
-    int *idList = (int*) malloc (entryCount * sizeof (int*));
-    ssize_t i;
+    int16_t *idList = (int16_t*) calloc (entryCount, 2U);
+    size_t i;
     
     if (entryCount == 0 || idList == NULL)
         return;
@@ -226,9 +236,9 @@ printAllIDs (void)
 
     quicksort (idList, 0, i-1);
 
-    (void) printf ("\n\tIDs: %d", idList[0]);
+    (void) printf ("\n\tIDs: %u", idList[0]);
     for (i = 1; i < entryCount; i++)
-        (void) printf (", %d", idList[i]);
+        (void) printf (", %u", idList[i]);
     
     free (idList);
     idList = NULL;
@@ -238,8 +248,8 @@ printAllIDs (void)
 void
 printAllColors (void)
 {
-    char **colorList = (char**) malloc ((entryCount + 1) * sizeof (char*));
-    ssize_t i;
+    char **colorList = (char**) calloc (entryCount+1, sizeof (char*));
+    size_t i;
 
     if (entryCount == 0 || colorList == NULL)
         return;
@@ -253,7 +263,7 @@ printAllColors (void)
     (void) printf ("\n\tColors: %s", colorList[0]);
     for (; i > 0; --i)
         (void) printf (", %s", colorList[i]);
-
+    
     free (colorList);
     colorList = NULL;
 }
@@ -262,8 +272,8 @@ printAllColors (void)
 void
 printAllManufacts (void)
 {
-    char **manufactList = (char**) malloc ((entryCount + 1) * sizeof (char*));
-    ssize_t i;
+    char **manufactList = (char**) calloc (entryCount+1, sizeof (char*));
+    size_t i;
 
     if (entryCount == 0 || manufactList == NULL)
         return;
@@ -277,7 +287,7 @@ printAllManufacts (void)
     (void) printf ("\n\tManufacturer: %s", manufactList[0]);
     for (; i > 0; --i)
         (void) printf (", %s", manufactList[i]);
-
+    
     free (manufactList);
     manufactList = NULL;
 }
@@ -286,8 +296,8 @@ printAllManufacts (void)
 void
 printAllDates (void)
 {
-    int *dateList = (int*) malloc ((entryCount + 1) * sizeof (int));
-    ssize_t i, j;
+    int16_t *dateList = (int16_t*) calloc (entryCount, 2U);
+    size_t i, j;
     
     if (entryCount == 0 || dateList == NULL)
         return;
@@ -300,10 +310,10 @@ printAllDates (void)
 
     quicksort (dateList, 0, i);
 
-    (void) printf ("\n\tManufact Dates: %d", dateList[0]);
+    (void) printf ("\n\tManufact Dates: %u", dateList[0]);
     for (j = 1; j <= i; j++)
-        (void) printf (", %d", dateList[j]);
-
+        (void) printf (", %u", dateList[j]);
+    
     free (dateList);
     dateList = NULL;
 }
@@ -365,7 +375,6 @@ modifyEntry (operation_t *const op)
       }
     else
       {
-        int i;
         clearScreen ();
         (void) printf ("\n\n\t[*] Enter New Info [*]\n\n");
         displayTableHeader ();
@@ -373,7 +382,7 @@ modifyEntry (operation_t *const op)
         displayTableFooter ();
         printf ("\t");
 
-        i = atoi (op->entryInfo->id);
+        int i = atoi (op->entryInfo->id);
         (void) strcpy (op->oldId, op->entryInfo->id);
 
         enterCarInfo (op->entryInfo);
@@ -395,25 +404,23 @@ modifyEntry (operation_t *const op)
 void
 updateArchive (FILE **archiveFp, operation_t *const op)
 {
-    ssize_t index;
-
     if (op->opType == APPEND)
       {
         writeToArchive (archiveFp, NULL, op->entryInfo);
-        entryTable[entryCount] = (entry_t*) malloc (sizeof (entry_t));
+        entryTable[entryCount] = (entry_t*) calloc (1U, sizeof (entry_t));
         copyEntry (entryTable[entryCount], op->entryInfo);
         entryCount++;
       }
     else if (op->opType == OVERWRITE)
       {
         writeToArchive (archiveFp, op->oldId, op->entryInfo);
-        index = getIndexFromID (op->oldId);
+        size_t index = (size_t) getIndexFromID (op->oldId);
         copyEntry (entryTable[index], op->entryInfo);
       }
     else if (op->opType == REMOVE)
       {
         writeToArchive (archiveFp, op->entryInfo->id, NULL);
-        index = getIndexFromID (op->entryInfo->id);
+        size_t index = (size_t) getIndexFromID (op->entryInfo->id);
         free (entryTable[index]);
         for (; index <= entryCount; index++)
             entryTable[index] = entryTable[index+1];
@@ -428,12 +435,9 @@ updateArchive (FILE **archiveFp, operation_t *const op)
 bool
 goToSearchMenu (void)
 {
-    entry_t **resultTable;
-    char option, *searchKey;
-
     clearScreen ();
     displaySearchMenu ();
-    option = getUserOption ();
+    char option = getUserOption ();
 
     switch (option)
       {
@@ -455,8 +459,8 @@ goToSearchMenu (void)
           return true;
       }
 
-    searchKey = getSearchTerm ();
-    resultTable = findAllMatching (searchKey, option, searchKey[0]);
+    char *searchKey = getSearchTerm ();
+    entry_t **resultTable = findAllMatching (searchKey, option, searchKey[0]);
 
     clearScreen ();
     (void) printf ("\n\n\t[*] Search Results [*]\n\n");
@@ -474,7 +478,7 @@ goToSearchMenu (void)
 char *
 getSearchTerm (void)
 {
-    char *searchKey = (char*) malloc (32U);
+    char *searchKey = (char*) calloc (1U, 32U);
 
     (void) printf ("\n\n\tEnter search term: ");
     (void) getString (searchKey, 32U);
@@ -519,12 +523,12 @@ displayTableFooter (void)
 char
 getUserOption (void)
 {
-    char ch, *str = (char*) malloc (30U);
+    char *str = (char*) calloc (1U, 30U);
 
     (void) getString (str, 30U);
     parseWhiteSpace (str);
 
-    ch = str[0];
+    char ch = str[0];
     free (str);
     str = NULL;
 
@@ -537,14 +541,14 @@ enterCarInfo (entry_t *const entry)
 {
     do
       {
-        (void) printf ("\n\tEntry's ID (%d..%d): ", MIN_ID, MAX_ID);
+        (void) printf ("\n\tEntry's ID (%u..%u): ", MIN_ID, MAX_ID);
         (void) getString (entry->id, sizeof (entry->id));
 
         if (isIntBetween (entry->id, MIN_ID, MAX_ID))
             break;
 
         (void) printf ("\n\tInvalid ID provided!");
-        (void) printf ("\n\tAcceptable IDs are between %d and %d.\n",
+        (void) printf ("\n\tAcceptable IDs are between %u and %u.\n",
                 MIN_ID, MAX_ID);
       }
     while (true);
@@ -559,7 +563,7 @@ enterCarInfo (entry_t *const entry)
 
     do
       {
-        (void) printf ("\n\n\tCar's date of manufacture (%d..%d): ",
+        (void) printf ("\n\n\tCar's date of manufacture (%u..%u): ",
                 MIN_DATE, MAX_DATE);
         (void) getString (entry->date, sizeof (entry->date));
 
@@ -567,7 +571,7 @@ enterCarInfo (entry_t *const entry)
             break;
 
         (void) printf ("\n\tInvalid date provided!");
-        (void) printf ("\n\tAcceptable dates are between %d and %d.",
+        (void) printf ("\n\tAcceptable dates are between %u and %u.",
                 MIN_DATE, MAX_DATE);
       }
     while (true);
@@ -600,7 +604,7 @@ displayEntryTable (entry_t *table[])
         i++;
       }
 
-    if (i == 0)
+    if (i == 0U)
         (void) printf ("\n\t|                       No Entrys Found!                        |");
 
     displayTableFooter ();
@@ -622,9 +626,7 @@ readEntry (FILE *archiveFp, entry_t *const entry)
 bool
 lookupEntryByID (const char *const id, entry_t *const entry)
 {
-    ssize_t i;
-
-    for (i = 0; i < entryCount; i++)
+    for (size_t i = 0; i < entryCount; i++)
       {
         if (atoi (entryTable[i]->id) == atoi (id))
           {
@@ -651,14 +653,14 @@ copyEntry (entry_t *const dest, const entry_t *const src)
 entry_t **
 findAllMatching (char *key, const char col, const char operand)
 {
-    entry_t **resultTable = (entry_t**) malloc (entryCount * sizeof (entry_t*));
-    ssize_t i, resultCount = 0;
+    entry_t **resultTable = calloc (entryCount, sizeof (entry_t*));
+    int16_t resultCount = 0;
 
     strToUpper (key);
     if ((col == ID_COL || col == DATE_COL) && operand != '\0')
         key++;
 
-    for (i = 0; i < entryCount; i++)
+    for (size_t i = 0; i < entryCount; i++)
       {
         switch (col)
           {
@@ -707,11 +709,10 @@ findAllMatching (char *key, const char col, const char operand)
 }
 
 
-ssize_t
+intmax_t
 getIndexFromID (const char *const entryId)
 {
-  ssize_t index;
-  for (index = 0; index < entryCount; index++)
+  for (intmax_t index = 0; (size_t) index < entryCount; index++)
     {
       if (!strcmp (entryId, entryTable[index]->id))
           return index;
@@ -725,10 +726,8 @@ writeToArchive (FILE **archiveFp,
                 const char *const entryId,
                 const entry_t *const entry)
 {
-    static entry_t tmpEntry;
     const char tmpFileName[] = "fRpZX6EPZV";
-    FILE *tmpFp;
-    ssize_t ret;
+    entry_t tmpEntry = {{0}};
 
     /* Append Entry */
     if (entryId == NULL)
@@ -743,7 +742,7 @@ writeToArchive (FILE **archiveFp,
         return;
       }
 
-    tmpFp = fopen (tmpFileName, "w");
+    FILE *tmpFp = fopen (tmpFileName, "w");
     if (tmpFp == NULL)
         fatal ("opening temporary file");
 
@@ -784,7 +783,7 @@ writeToArchive (FILE **archiveFp,
     (void) fclose (*archiveFp);
     (void) fclose (tmpFp);
 
-    ret = remove (ARCHIVE);
+    int ret = remove (ARCHIVE);
     if (ret == -1)
         fatal ("removing outdated archive");
 
