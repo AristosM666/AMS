@@ -51,7 +51,6 @@ void createNewEntry (operation_t *const op);
 void removeEntry (operation_t *const op);
 void modifyEntry (operation_t *const op);
 void updateArchive (FILE **archiveFp, operation_t *const op);
-void pause (void);
 void displayEntryTable (entry_t *table[]);
 void displayTableHeader (void);
 void displayTableFooter (void);
@@ -115,15 +114,6 @@ displaySplashScreen (void)
     printf ("\t\t\tIn:\tStandard C 11\n");
     printf ("\t\t\tDate:\t10/10/2015\n\n\t");
     pause ();
-}
-
-
-void
-pause (void)
-{
-    fflush (stdin);
-    printf ("\tPress [ Enter ] to continue...");
-    getchar ();
 }
 
 
