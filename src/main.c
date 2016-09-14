@@ -1,13 +1,3 @@
-/* [08/30/2016 06:19:47 PM]
-Functionality:
-  use ESC to send cancel signal when waiting for user input
-  encrypt archive and require password
-  chose archive path based on os (linux, windows, mac)
-  manage multiple archives
-
-Test: (valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all ./ams)
-  fuzz enterCarInfo & getSearchTerm
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
