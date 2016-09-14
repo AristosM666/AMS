@@ -15,6 +15,7 @@ size_t getString (char *dest, size_t size);
 bool isIntBetween (char *src, intmax_t min, intmax_t max);
 void parseWhiteSpace (char *src);
 void fatal (char *errMsg);
+void pause (void);
 void clearScreen (void);
 void strToUpper (char *str);
 
