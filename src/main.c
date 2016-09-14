@@ -99,7 +99,7 @@ main (void)
         free (entryTable[entryCount]);
       }
     free (op.entryInfo);
-    (void) fclose (archiveFp);
+    fclose (archiveFp);
 
     return EXIT_SUCCESS;
 }
@@ -108,12 +108,12 @@ main (void)
 void
 displaySplashScreen (void)
 {
-    (void) printf ("\n\n\n\n\t\t[::] Automotive Management System [::]\n\n");
-    (void) printf ("\t\tCollege Software Engineering Project.\n\n");
-    (void) printf ("\t\tWritten By:\tAristos Miliaressis\n");
-    (void) printf ("\t\t\tAt:\tIek XINI Athens\n");
-    (void) printf ("\t\t\tIn:\tStandard C 11\n");
-    (void) printf ("\t\t\tDate:\t10/10/2015\n\n\t");
+    printf ("\n\n\n\n\t\t[::] Automotive Management System [::]\n\n");
+    printf ("\t\tCollege Software Engineering Project.\n\n");
+    printf ("\t\tWritten By:\tAristos Miliaressis\n");
+    printf ("\t\t\tAt:\tIek XINI Athens\n");
+    printf ("\t\t\tIn:\tStandard C 11\n");
+    printf ("\t\t\tDate:\t10/10/2015\n\n\t");
     pause ();
 }
 
@@ -121,9 +121,9 @@ displaySplashScreen (void)
 void
 pause (void)
 {
-    (void) fflush (stdin);
-    (void) printf ("\tPress [ Enter ] to continue...");
-    (void) getchar ();
+    fflush (stdin);
+    printf ("\tPress [ Enter ] to continue...");
+    getchar ();
 }
 
 
@@ -155,25 +155,25 @@ goToMainMenu (FILE **archiveFp, operation_t *const op)
     switch (option)
       {
       case '1':
-        (void) printf ("\n\n\t[*] Display All (%zu) Entrys [*]\n\n", entryCount);
+        printf ("\n\n\t[*] Display All (%zu) Entrys [*]\n\n", entryCount);
 
         displayEntryTable (entryTable);
         break;
 
       case '2':
-        (void) printf ("\n\n\t[*] Create New Entry [*]\n\n");
+        printf ("\n\n\t[*] Create New Entry [*]\n\n");
 
         createNewEntry (op);
         break;
 
       case '3':
-        (void) printf ("\n\n\t[*] Remove Entry [*]\n\n");
+        printf ("\n\n\t[*] Remove Entry [*]\n\n");
 
         removeEntry (op);
         break;
 
       case '4':
-        (void) printf ("\n\n\t[*] Modify Entry [*]\n\n");
+        printf ("\n\n\t[*] Modify Entry [*]\n\n");
 
         modifyEntry (op);
         break;
@@ -183,7 +183,7 @@ goToMainMenu (FILE **archiveFp, operation_t *const op)
         break;
 
       case '6':
-        (void) printf ("\n\n\tUpdating '%s' archive..", ARCHIVE);
+        printf ("\n\n\tUpdating '%s' archive..", ARCHIVE);
 
         updateArchive (archiveFp, op);
         break;
@@ -199,16 +199,16 @@ goToMainMenu (FILE **archiveFp, operation_t *const op)
 void
 displayMainMenu (void)
 {
-    (void) printf ("\n\n\t[*] Main Menu [*]");
-    (void) printf ("\n\n\t[1] - View All Entrys");
-    (void) printf ("\n\t[2] - Create New Entry");
-    (void) printf ("\n\t[3] - Remove Entry");
-    (void) printf ("\n\t[4] - Modify Entry");
-    (void) printf ("\n\t[5] - Search Archive");
-    (void) printf ("\n\t[6] - Update Archive");
-    (void) printf ("\n\t[0] - Exit");
-    (void) printf ("\n\n\tSelect an Option (0-6): ");
-    (void) fflush (stdin);
+    printf ("\n\n\t[*] Main Menu [*]");
+    printf ("\n\n\t[1] - View All Entrys");
+    printf ("\n\t[2] - Create New Entry");
+    printf ("\n\t[3] - Remove Entry");
+    printf ("\n\t[4] - Modify Entry");
+    printf ("\n\t[5] - Search Archive");
+    printf ("\n\t[6] - Update Archive");
+    printf ("\n\t[0] - Exit");
+    printf ("\n\n\tSelect an Option (0-6): ");
+    fflush (stdin);
 }
 
 
@@ -226,9 +226,9 @@ printAllIDs (void)
 
     quicksort (idList, 0, i-1);
 
-    (void) printf ("\n\tIDs: %u", idList[0]);
+    printf ("\n\tIDs: %u", idList[0]);
     for (i = 1; i < entryCount; i++)
-        (void) printf (", %u", idList[i]);
+        printf (", %u", idList[i]);
     
     free (idList);
     idList = NULL;
@@ -250,9 +250,9 @@ printAllColors (void)
 
     i = removeDuplicateStr (colorList, i);
 
-    (void) printf ("\n\tColors: %s", colorList[0]);
+    printf ("\n\tColors: %s", colorList[0]);
     for (; i > 0; --i)
-        (void) printf (", %s", colorList[i]);
+        printf (", %s", colorList[i]);
     
     free (colorList);
     colorList = NULL;
@@ -274,9 +274,9 @@ printAllManufacts (void)
 
     i = removeDuplicateStr (manufactList, i);
 
-    (void) printf ("\n\tManufacturer: %s", manufactList[0]);
+    printf ("\n\tManufacturer: %s", manufactList[0]);
     for (; i > 0; --i)
-        (void) printf (", %s", manufactList[i]);
+        printf (", %s", manufactList[i]);
     
     free (manufactList);
     manufactList = NULL;
@@ -300,9 +300,9 @@ printAllDates (void)
 
     quicksort (dateList, 0, i);
 
-    (void) printf ("\n\tManufact Dates: %u", dateList[0]);
+    printf ("\n\tManufact Dates: %u", dateList[0]);
     for (j = 1; j <= i; j++)
-        (void) printf (", %u", dateList[j]);
+        printf (", %u", dateList[j]);
     
     free (dateList);
     dateList = NULL;
@@ -317,14 +317,14 @@ createNewEntry (operation_t *const op)
     if (!lookupEntryByID (op->entryInfo->id, NULL))
       {
         op->opType = APPEND;
-        (void) printf ("\n\n\tEntry created successfully!");
+        printf ("\n\n\tEntry created successfully!");
       }
     else
       {
         op->opType = INVALID;
-        (void) printf ("\n\tError ID '%s' already in use..", op->entryInfo->id);
+        printf ("\n\tError ID '%s' already in use..", op->entryInfo->id);
       }
-    (void) getchar ();
+    getchar ();
 }
 
 
@@ -333,20 +333,20 @@ removeEntry (operation_t *const op)
 {
     printAllIDs ();
 
-    (void) printf ("\n\n\tEnter car's ID number: ");
-    (void) getString (op->entryInfo->id, sizeof (op->entryInfo->id));
+    printf ("\n\n\tEnter car's ID number: ");
+    getString (op->entryInfo->id, sizeof (op->entryInfo->id));
 
     if (!lookupEntryByID (op->entryInfo->id, op->entryInfo))
       {
         op->opType = INVALID;
-        (void) printf ("\n\tEntry ID '%s' doesn't exist..", op->entryInfo->id);
+        printf ("\n\tEntry ID '%s' doesn't exist..", op->entryInfo->id);
       }
     else
       {
         op->opType = REMOVE;
-        (void) printf ("\n\tEntry removed successfully!");
+        printf ("\n\tEntry removed successfully!");
       }
-    (void) getchar ();
+    getchar ();
 }
 
 
@@ -355,39 +355,39 @@ modifyEntry (operation_t *const op)
 {
     printAllIDs ();
 
-    (void) printf ("\n\n\tEnter car's ID number: ");
-    (void) getString (op->entryInfo->id, sizeof (op->entryInfo->id));
+    printf ("\n\n\tEnter car's ID number: ");
+    getString (op->entryInfo->id, sizeof (op->entryInfo->id));
 
     if (!lookupEntryByID (op->entryInfo->id, op->entryInfo))
       {
         op->opType = INVALID;
-        (void) printf ("\n\tEntry ID '%s' doesn't exist..", op->entryInfo->id);
+        printf ("\n\tEntry ID '%s' doesn't exist..", op->entryInfo->id);
       }
     else
       {
         clearScreen ();
-        (void) printf ("\n\n\t[*] Enter New Info [*]\n\n");
+        printf ("\n\n\t[*] Enter New Info [*]\n\n");
         displayTableHeader ();
         displayEntryRow (op->entryInfo);
         displayTableFooter ();
         printf ("\t");
 
         int i = atoi (op->entryInfo->id);
-        (void) strcpy (op->oldId, op->entryInfo->id);
+        strcpy (op->oldId, op->entryInfo->id);
 
         enterCarInfo (op->entryInfo);
         if (!lookupEntryByID (op->entryInfo->id, NULL) || i == atoi (op->entryInfo->id))
           {
             op->opType = OVERWRITE;
-            (void) printf ("\n\n\tEntry modified successfully!");
+            printf ("\n\n\tEntry modified successfully!");
           }
         else
           {
             op->opType = INVALID;
-            (void) printf ("\n\tError ID '%s' already in use..", op->entryInfo->id);
+            printf ("\n\tError ID '%s' already in use..", op->entryInfo->id);
           }
       }
-    (void) getchar ();
+    getchar ();
 }
 
 
@@ -453,7 +453,7 @@ goToSearchMenu (void)
     entry_t **resultTable = findAllMatching (searchKey, option, searchKey[0]);
 
     clearScreen ();
-    (void) printf ("\n\n\t[*] Search Results [*]\n\n");
+    printf ("\n\n\t[*] Search Results [*]\n\n");
     displayEntryTable (resultTable);
 
     free (resultTable);
@@ -470,8 +470,8 @@ getSearchTerm (void)
 {
     char *searchKey = (char*) calloc (1U, 32U);
 
-    (void) printf ("\n\n\tEnter search term: ");
-    (void) getString (searchKey, 32U);
+    printf ("\n\n\tEnter search term: ");
+    getString (searchKey, 32U);
 
     parseWhiteSpace (searchKey);
     strToUpper (searchKey);
@@ -483,30 +483,30 @@ getSearchTerm (void)
 void
 displaySearchMenu (void)
 {
-    (void) printf ("\n\n\t[*] Search Archive [*]");
-    (void) printf ("\n\n\t[1] - Search By ID");
-    (void) printf ("\n\t[2] - Search By Color");
-    (void) printf ("\n\t[3] - Search By Manufacturer");
-    (void) printf ("\n\t[4] - Search By Date");
-    (void) printf ("\n\t[0] - Back to Main Menu");
-    (void) printf ("\n\n\tSelect an Option (0-4): ");
-    (void) fflush (stdin);
+    printf ("\n\n\t[*] Search Archive [*]");
+    printf ("\n\n\t[1] - Search By ID");
+    printf ("\n\t[2] - Search By Color");
+    printf ("\n\t[3] - Search By Manufacturer");
+    printf ("\n\t[4] - Search By Date");
+    printf ("\n\t[0] - Back to Main Menu");
+    printf ("\n\n\tSelect an Option (0-4): ");
+    fflush (stdin);
 }
 
 
 void
 displayTableHeader (void)
 {
-    (void) printf ("\t _______________________________________________________________\n");
-    (void) printf ("\t| ID  \t\tColor\t\tManufacturer\t\tDate\t|\n");
-    (void) printf ("\t|---------------------------------------------------------------|");
+    printf ("\t _______________________________________________________________\n");
+    printf ("\t| ID  \t\tColor\t\tManufacturer\t\tDate\t|\n");
+    printf ("\t|---------------------------------------------------------------|");
 }
 
 
 void
 displayTableFooter (void)
 {
-    (void) printf ("\n\t|_______________________________________________________________|\n\n");
+    printf ("\n\t|_______________________________________________________________|\n\n");
 }
 
 
@@ -515,7 +515,7 @@ getUserOption (void)
 {
     char *str = (char*) calloc (1U, 30U);
 
-    (void) getString (str, 30U);
+    getString (str, 30U);
     parseWhiteSpace (str);
 
     char ch = str[0];
@@ -531,37 +531,37 @@ enterCarInfo (entry_t *const entry)
 {
     do
       {
-        (void) printf ("\n\tEntry's ID (%u..%u): ", MIN_ID, MAX_ID);
-        (void) getString (entry->id, sizeof (entry->id));
+        printf ("\n\tEntry's ID (%u..%u): ", MIN_ID, MAX_ID);
+        getString (entry->id, sizeof (entry->id));
 
         if (isIntBetween (entry->id, MIN_ID, MAX_ID))
             break;
 
-        (void) printf ("\n\tInvalid ID provided!");
-        (void) printf ("\n\tAcceptable IDs are between %u and %u.\n",
+        printf ("\n\tInvalid ID provided!");
+        printf ("\n\tAcceptable IDs are between %u and %u.\n",
                 MIN_ID, MAX_ID);
       }
     while (true);
 
-    (void) printf ("\n\n\tCar's Color: ");
-    (void) getString (entry->color, sizeof (entry->color));
+    printf ("\n\n\tCar's Color: ");
+    getString (entry->color, sizeof (entry->color));
     strToUpper (entry->color);
 
-    (void) printf ("\n\n\tCar's Manufacturer: ");
-    (void) getString (entry->manufact, sizeof (entry->manufact));
+    printf ("\n\n\tCar's Manufacturer: ");
+    getString (entry->manufact, sizeof (entry->manufact));
     strToUpper (entry->manufact);
 
     do
       {
-        (void) printf ("\n\n\tCar's date of manufacture (%u..%u): ",
+        printf ("\n\n\tCar's date of manufacture (%u..%u): ",
                 MIN_DATE, MAX_DATE);
-        (void) getString (entry->date, sizeof (entry->date));
+        getString (entry->date, sizeof (entry->date));
 
         if (isIntBetween (entry->date, MIN_DATE, MAX_DATE))
             break;
 
-        (void) printf ("\n\tInvalid date provided!");
-        (void) printf ("\n\tAcceptable dates are between %u and %u.",
+        printf ("\n\tInvalid date provided!");
+        printf ("\n\tAcceptable dates are between %u and %u.",
                 MIN_DATE, MAX_DATE);
       }
     while (true);
@@ -573,11 +573,11 @@ displayEntryRow (const entry_t *const entry)
 {
     char tmp[30] = { 0 };
 
-    (void) strcpy (tmp, entry->manufact);
+    strcpy (tmp, entry->manufact);
     if (strlen (tmp) < 8)
-        (void) strcat (tmp, "\t");
+        strcat (tmp, "\t");
 
-    (void) printf ("\n\t| %s\t\t%s\t\t%s\t\t%s\t|",
+    printf ("\n\t| %s\t\t%s\t\t%s\t\t%s\t|",
             entry->id, entry->color, tmp, entry->date);
 }
 
@@ -595,7 +595,7 @@ displayEntryTable (entry_t *table[])
       }
 
     if (i == 0U)
-        (void) printf ("\n\t|                       No Entrys Found!                        |");
+        printf ("\n\t|                       No Entrys Found!                        |");
 
     displayTableFooter ();
     pause ();
@@ -633,10 +633,10 @@ lookupEntryByID (const char *const id, entry_t *const entry)
 void
 copyEntry (entry_t *const dest, const entry_t *const src)
 {
-    (void) strcpy (dest->id, src->id);
-    (void) strcpy (dest->color, src->color);
-    (void) strcpy (dest->manufact, src->manufact);
-    (void) strcpy (dest->date, src->date);
+    strcpy (dest->id, src->id);
+    strcpy (dest->color, src->color);
+    strcpy (dest->manufact, src->manufact);
+    strcpy (dest->date, src->date);
 }
 
 
@@ -722,13 +722,13 @@ writeToArchive (FILE **archiveFp,
     /* Append Entry */
     if (entryId == NULL)
       {
-        (void) fseek (*archiveFp, -1, SEEK_END);
-        (void) fprintf (*archiveFp, "%s,%s,%s,%s,",
+        fseek (*archiveFp, -1, SEEK_END);
+        fprintf (*archiveFp, "%s,%s,%s,%s,",
                 entry->id,
                 entry->color,
                 entry->manufact,
                 entry->date);
-        (void) fflush (*archiveFp);
+        fflush (*archiveFp);
         return;
       }
 
@@ -742,36 +742,36 @@ writeToArchive (FILE **archiveFp,
         if (!strcmp (entryId, tmpEntry.id))
             break;
 
-        (void) fprintf (tmpFp, "%s,%s,%s,%s,",
+        fprintf (tmpFp, "%s,%s,%s,%s,",
                  tmpEntry.id,
                  tmpEntry.color,
                  tmpEntry.manufact,
                  tmpEntry.date);
-        (void) fflush (tmpFp);
+        fflush (tmpFp);
       }
 
     /* Overwrite Entry */
     if (entry != NULL)
       {
-        (void) fprintf (tmpFp, "%s,%s,%s,%s,",
+        fprintf (tmpFp, "%s,%s,%s,%s,",
                  entry->id,
                  entry->color,
                  entry->manufact,
                  entry->date);
-        (void) fflush (tmpFp);
+        fflush (tmpFp);
       }
 
     while (readEntry (*archiveFp, &tmpEntry))
       {
-        (void) fprintf (tmpFp, "%s,%s,%s,%s,",
+        fprintf (tmpFp, "%s,%s,%s,%s,",
                  tmpEntry.id,
                  tmpEntry.color,
                  tmpEntry.manufact,
                  tmpEntry.date);
-        (void) fflush (tmpFp);
+        fflush (tmpFp);
       }
-    (void) fclose (*archiveFp);
-    (void) fclose (tmpFp);
+    fclose (*archiveFp);
+    fclose (tmpFp);
 
     int ret = remove (ARCHIVE);
     if (ret == -1)
