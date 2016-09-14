@@ -112,7 +112,7 @@ displaySplashScreen (void)
     (void) printf ("\t\tCollege Software Engineering Project.\n\n");
     (void) printf ("\t\tWritten By:\tAristos Miliaressis\n");
     (void) printf ("\t\t\tAt:\tIek XINI Athens\n");
-    (void) printf ("\t\t\tIn:\tANSI-C\n");
+    (void) printf ("\t\t\tIn:\tC11\n");
     (void) printf ("\t\t\tDate:\t10/10/2015\n\n\t");
     pause ();
 }
