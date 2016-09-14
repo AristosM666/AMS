@@ -6,33 +6,29 @@
 #include <stdio_ext.h>
 
 
-static ssize_t partition (int arr[], ssize_t lo, ssize_t hi);
-static void swap (int *lval, int *rval);
+static intmax_t partition (int16_t arr[], intmax_t lo, intmax_t hi);
+static void swap (int16_t *lval, int16_t *rval);
 
 
 void
-quicksort (int arr[], ssize_t lo, ssize_t hi)
+quicksort (int16_t arr[], intmax_t lo, intmax_t hi)
 {
-    ssize_t p;
     if (lo < hi)
       {
-        p = partition (arr, lo, hi);
+        intmax_t p = partition (arr, lo, hi);
         quicksort (arr, lo, p - 1);
         quicksort (arr, p + 1, hi);
       }
 }
 
 
-static ssize_t
-partition (int arr[], ssize_t lo, ssize_t hi)
+static intmax_t
+partition (int16_t arr[], intmax_t lo, intmax_t hi)
 {
-    ssize_t i, pivotIndex;
-    int pivotValue;
+    int16_t pivotValue = arr[hi];
+    intmax_t pivotIndex = lo;
 
-    pivotValue = arr[hi];
-    pivotIndex = lo;
-
-    for (i = lo; i <= hi - 1; i++)
+    for (intmax_t i = lo; i <= hi - 1; i++)
       {
         if (arr[i] <= pivotValue)
           {
@@ -47,9 +43,9 @@ partition (int arr[], ssize_t lo, ssize_t hi)
 
 
 static void
-swap (int *lval, int *rval)
+swap (int16_t *lval, int16_t *rval)
 {
-    int tmp = *lval;
+    int16_t tmp = *lval;
     *lval = *rval;
     *rval = tmp;
 }
@@ -58,16 +54,17 @@ swap (int *lval, int *rval)
 size_t
 removeDuplicateStr (char *arr[], size_t nmemb)
 {
-    char **current, **end = arr + nmemb - 1;
+    char **end = arr + nmemb - 1;
     size_t count = 0;
 
-    for (current = arr + 1; arr < end; arr++, current = arr + 1)
+    for (char **current = arr + 1; arr < end; arr++, current = arr + 1)
       {
         while (current <= end)
           {
             if (!strcmp (*current, *arr))
               {
-                (void) strcpy (*current, *end);
+                if (current != end)
+                    (void) strcpy (*current, *end);
                 end--;
               }
             else
@@ -81,12 +78,12 @@ removeDuplicateStr (char *arr[], size_t nmemb)
 
 
 size_t
-removeDuplicate (int arr[], size_t nmemb)
+removeDuplicate (int16_t arr[], size_t nmemb)
 {
-    int *current, *end = arr + nmemb - 1;
+    int16_t *end = arr + nmemb - 1;
     size_t count = 0;
 
-    for (current = arr + 1; arr < end; arr++, current = arr + 1)
+    for (int16_t *current = arr + 1; arr < end; arr++, current = arr + 1)
       {
         while (current <= end)
           {
@@ -129,11 +126,9 @@ csvReadNextVal (FILE *fp, char *dest)
 size_t
 getString (char *dest, size_t size)
 {
-    size_t len;
-
     (void) fflush (stdin);
     (void) fgets (dest, (int) size, stdin);
-    len = strlen (dest);
+    size_t len = strlen (dest);
 
     if (len == size - 1)
         (void) getchar ();
@@ -150,11 +145,9 @@ getString (char *dest, size_t size)
 
 
 bool
-isIntBetween (char *src, ssize_t min, ssize_t max)
+isIntBetween (char *src, intmax_t min, intmax_t max)
 {
-    size_t i;
-
-    for (i = 0; i < strlen (src); i++)
+    for (size_t i = 0; i < strlen (src); i++)
       {
         if (!isdigit ( *(src + i) ))
             return false;
@@ -175,11 +168,10 @@ parseWhiteSpace (char *str)
         ch = str[i];
         if (ch == ' ' || ch == '\t' || ch == '\n')
           {
-            size_t j;
-            for (j = i; j < strlen (str); j++)
+            for (size_t j = i; j < strlen (str); j++)
                 str[j] = str[j+1];
           }
-        else
+        else 
             i++;
       }
     while (ch != '\0');
@@ -209,8 +201,7 @@ clearScreen (void)
 void
 strToUpper (char *str)
 {
-    size_t i;
-    for (i = 0; i < strlen (str); i++)
+    for (size_t i = 0; i < strlen (str); i++)
         str[i] = (char) toupper (str[i]);
 }
 
