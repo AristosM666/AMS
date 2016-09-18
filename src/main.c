@@ -1,3 +1,13 @@
+/* [08/30/2016 06:19:47 PM]
+Functionality:
+  use ESC to send cancel signal when waiting for user input
+  encrypt archive and require password
+  chose archive path based on os (linux, windows, mac)
+  manage multiple archives
+
+Test: (valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all ./ams)
+  fuzz enterCarInfo & getSearchTerm
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -66,11 +76,16 @@ void printAllDates (void);
 void enterCarInfo (entry_t *const entry);
 bool readEntry (FILE *archiveFp, entry_t *const entry);
 void loadArchive (FILE *archiveFp);
-bool lookupEntryByID (const char *const id, entry_t *const entry);
 void copyEntry (entry_t *const dest, const entry_t *const src);
-entry_t **findAllMatching (char *key, const char col, const char operand);
 intmax_t getIndexFromID (const char *const entryId);
-void writeToArchive (FILE **archiveFp, const char *const entryId, const entry_t *const entry);
+bool lookupEntryByID (const char *const id, 
+                      entry_t *const entry);
+entry_t **findAllMatching (char *key, 
+                           const char col, 
+                           const char operand);
+void writeToArchive (FILE **archiveFp, 
+                     const char *const entryId, 
+                     const entry_t *const entry);
 
 
 int
@@ -304,7 +319,7 @@ createNewEntry (operation_t *const op)
 {
     enterCarInfo (op->entryInfo);
 
-    if (!lookupEntryByID (op->entryInfo->id, NULL))
+    if (getIndexFromID (op->entryInfo->id) != -1)
       {
         op->opType = APPEND;
         printf ("\n\n\tEntry created successfully!");
@@ -366,7 +381,8 @@ modifyEntry (operation_t *const op)
         strcpy (op->oldId, op->entryInfo->id);
 
         enterCarInfo (op->entryInfo);
-        if (!lookupEntryByID (op->entryInfo->id, NULL) || i == atoi (op->entryInfo->id))
+        if (getIndexFromID (op->entryInfo->id) != -1 
+            || i == atoi (op->entryInfo->id))
           {
             op->opType = OVERWRITE;
             printf ("\n\n\tEntry modified successfully!");
@@ -487,16 +503,19 @@ displaySearchMenu (void)
 void
 displayTableHeader (void)
 {
-    printf ("\t _______________________________________________________________\n");
+    printf ("\t ________________________________"\
+            "_______________________________\n");
     printf ("\t| ID  \t\tColor\t\tManufacturer\t\tDate\t|\n");
-    printf ("\t|---------------------------------------------------------------|");
+    printf ("\t|-----------------------------"\
+            "----------------------------------|");
 }
 
 
 void
 displayTableFooter (void)
 {
-    printf ("\n\t|_______________________________________________________________|\n\n");
+    printf ("\n\t|____________________________"\
+            "___________________________________|\n\n");
 }
 
 
@@ -646,9 +665,9 @@ findAllMatching (char *key, const char col, const char operand)
           {
           case ID_COL:
             {
-              if ((operand == '>'  && atoi (entryTable[i]->id) >  atoi (key)) ||
-                  (operand == '<'  && atoi (entryTable[i]->id) <  atoi (key)) ||
-                  (operand == '\0' && atoi (entryTable[i]->id) == atoi (key)))
+              if ((operand == '>'  && atoi (entryTable[i]->id) > atoi (key))
+               || (operand == '<'  && atoi (entryTable[i]->id) < atoi (key))
+               || (operand == '\0' && atoi (entryTable[i]->id) == atoi (key)))
                 {
                   resultTable[resultCount] = entryTable[i];
                   resultCount++;
@@ -675,8 +694,8 @@ findAllMatching (char *key, const char col, const char operand)
             }
           case DATE_COL:
             {
-              if ((operand == '>' && atoi (entryTable[i]->date) > atoi (key)) ||
-                  (operand == '<' && atoi (entryTable[i]->date) < atoi (key)))
+              if ((operand == '>' && atoi (entryTable[i]->date) > atoi (key))
+               || (operand == '<' && atoi (entryTable[i]->date) < atoi (key)))
                 {
                   resultTable[resultCount] = entryTable[i];
                   resultCount++;
