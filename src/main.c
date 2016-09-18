@@ -1,13 +1,3 @@
-/* [08/30/2016 06:19:47 PM]
-Functionality:
-  use ESC to send cancel signal when waiting for user input
-  encrypt archive and require password
-  chose archive path based on os (linux, windows, mac)
-  manage multiple archives
-
-Test: (valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all ./ams)
-  fuzz enterCarInfo & getSearchTerm
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -653,7 +643,7 @@ entry_t **
 findAllMatching (char *key, const char col, const char operand)
 {
     entry_t **resultTable = calloc (entryCount, sizeof (entry_t*));
-    int16_t resultCount = 0;
+    size_t resultCount = 0;
 
     strToUpper (key);
     if ((col == ID_COL || col == DATE_COL) && operand != '\0')
