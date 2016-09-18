@@ -32,10 +32,10 @@ const uint16_t MAX_ID = 9999;
 
 struct Entry
 {
-  char id[5];
-  char color[30];
-  char manufact[30];
-  char date[5];
+    char id[5];
+    char color[30];
+    char manufact[30];
+    char date[5];
 };
 typedef struct Entry entry_t;
 
@@ -47,9 +47,9 @@ size_t entryCount = 0;
 
 struct Operation
 {
-  enum { INVALID=0, REMOVE, OVERWRITE, APPEND } opType;
-  entry_t *entryInfo;
-  char oldId[5];
+    enum { INVALID=0, REMOVE, OVERWRITE, APPEND } opType;
+    entry_t *entryInfo;
+    char oldId[5];
 };
 typedef struct Operation operation_t;
 
