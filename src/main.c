@@ -185,7 +185,7 @@ goToMainMenu (FILE **archiveFp, operation_t *const op)
 
       case '0':
         return false;
-    }
+      }
 
   return true;
 }
