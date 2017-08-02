@@ -716,7 +716,7 @@ writeToArchive (FILE **archiveFp,
                 const entry_t *const entry)
 {
     const char tmpFileName[] = "fRpZX6EPZV";
-    entry_t tmpEntry = {{0}};
+    entry_t tmpEntry = {{0}, {0}, {0}, {0}};
 
     /* Append Entry */
     if (entryId == NULL)
