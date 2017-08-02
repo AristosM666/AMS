@@ -113,10 +113,10 @@ void
 displaySplashScreen (void)
 {
     printf ("\n\n\n\n\t\t[::] Automotive Management System [::]\n\n");
-    printf ("\t\tCollege Software Engineering Project.\n\n");
+    printf ("\t\tCollege Software Development Project.\n\n");
     printf ("\t\tWritten By:\tAristos Miliaressis\n");
-    printf ("\t\t\tAt:\tIek XINI Athens\n");
-    printf ("\t\t\tIn:\tStandard C 11\n");
+    printf ("\t\t\tAt:\tIEK XINI Athens\n");
+    printf ("\t\t\tIn:\tStandard C11\n");
     printf ("\t\t\tDate:\t10/10/2015\n\n\t");
     pause ();
 }
