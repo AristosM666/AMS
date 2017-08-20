@@ -1,14 +1,4 @@
-/* [08/30/2016 06:19:47 PM]
-Functionality:
-  use ESC to send cancel signal when waiting for user input
-  encrypt archive and require password
-  chose archive path based on os (linux, windows, mac)
-  manage multiple archives
-
-Test: (valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all ./ams)
-  fix search
-  fuzz everithing
-*/
+/* [08/30/2016 06:19:47 PM] */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -674,37 +664,40 @@ findAllMatching (char *key, const char col, const char operand)
               if ((operand == '>'  && atoi (entryTable[i]->id) > atoi (key))
                || (operand == '<'  && atoi (entryTable[i]->id) < atoi (key))
                || (operand == '\0' && atoi (entryTable[i]->id) == atoi (key)))
-                   resultTable[resultCount] = entryTable[i];
-              else
-                  continue;
+                {
+                  resultTable[resultCount] = entryTable[i];
+                  resultCount++;
+                }
               break;
             }
           case COL_COLOR:
             {
               if (strncmp (key, entryTable[i]->color, strlen (key)) == 0)
+                {
                   resultTable[resultCount] = entryTable[i];
-              else
-                  continue;
+                  resultCount++;
+                }
               break;
             }
           case COL_MANUFACT:
             {
               if (strncmp (key, entryTable[i]->manufact, strlen (key)) == 0)
+                {
                   resultTable[resultCount] = entryTable[i];
-              else
-                  continue;
+                  resultCount++;
+                }
               break;
             }
           case COL_DATE:
             {
               if ((operand == '>' && atoi (entryTable[i]->date) > atoi (key))
                || (operand == '<' && atoi (entryTable[i]->date) < atoi (key)))
+                {
                   resultTable[resultCount] = entryTable[i];
-              else
-                  continue;
+                  resultCount++;
+                }
             }
           }
-        resultCount++;
       }
 
     return resultTable;
