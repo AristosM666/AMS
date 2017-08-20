@@ -64,7 +64,7 @@ removeDuplicateStr (char *arr[], size_t nmemb)
             if (!strcmp (*current, *arr))
               {
                 if (current != end)
-                    strcpy (*current, *end);
+                    strncpy (*current, *end, sizeof (current));
                 end--;
               }
             else
@@ -78,7 +78,7 @@ removeDuplicateStr (char *arr[], size_t nmemb)
 
 
 size_t
-removeDuplicate (int16_t arr[], size_t nmemb)
+removeDuplicateInt (int16_t arr[], size_t nmemb)
 {
     int16_t *end = arr + nmemb - 1;
     size_t count = 0;
@@ -190,7 +190,8 @@ fatal (char *errMsg)
 {
     clearScreen ();
     fprintf (stderr, "\n\n\t\tFailed while %s!", errMsg);
-    perror ("\n\t\tERROR");
+    perror ("\n\n\t\tERROR");
+    __fpurge(stdout);
     printf ("\n\t");
     pause ();
 
