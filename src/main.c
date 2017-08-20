@@ -1,3 +1,14 @@
+/* [08/30/2016 06:19:47 PM]
+Functionality:
+  use ESC to send cancel signal when waiting for user input
+  encrypt archive and require password
+  chose archive path based on os (linux, windows, mac)
+  manage multiple archives
+
+Test: (valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all ./ams)
+  fix search
+  fuzz everithing
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,10 +21,10 @@
 const char ARCHIVE[] = "ams_archive.csv";
 
 
-#define ID_COL '1'
-#define COLOR_COL '2'
-#define MANUFACT_COL '3'
-#define DATE_COL '4'
+#define COL_ID '1'
+#define COL_COLOR '2'
+#define COL_MANUFACT '3'
+#define COL_DATE '4'
 
 const uint16_t MIN_DATE = 1960;
 const uint16_t MAX_DATE = 2006;
@@ -46,11 +57,11 @@ typedef struct Operation operation_t;
 
 void displaySplashScreen (void);
 void displayMainMenu (void);
-bool goToMainMenu (FILE **archiveFp, operation_t *const op);
+bool goToMainMenu (operation_t *const op);
 void createNewEntry (operation_t *const op);
 void removeEntry (operation_t *const op);
 void modifyEntry (operation_t *const op);
-void updateArchive (FILE **archiveFp, operation_t *const op);
+void updateArchive (operation_t *const op);
 void displayEntryTable (entry_t *table[]);
 void displayTableHeader (void);
 void displayTableFooter (void);
@@ -64,18 +75,15 @@ void printAllManufacts (void);
 void printAllIDs (void);
 void printAllDates (void);
 void enterCarInfo (entry_t *const entry);
-bool readEntry (FILE *archiveFp, entry_t *const entry);
-void loadArchive (FILE *archiveFp);
+bool readNextEntry (FILE *archiveFp, entry_t *const entry);
+void loadArchive (void);
 void copyEntry (entry_t *const dest, const entry_t *const src);
 intmax_t getIndexFromID (const char *const entryId);
-bool lookupEntryByID (const char *const id, 
-                      entry_t *const entry);
-entry_t **findAllMatching (char *key, 
-                           const char col, 
-                           const char operand);
-void writeToArchive (FILE **archiveFp, 
-                     const char *const entryId, 
-                     const entry_t *const entry);
+bool lookupEntryByID (const char *const id, entry_t *const entry);
+entry_t **findAllMatching (char *key, const char col, const char operand);
+void writeNewArchive (const char *const entryId, const entry_t *const entry);
+void appendToArchive (const entry_t *const entry);
+void replaceOldArchive (const char *const oldArchive);
 
 
 int
@@ -86,16 +94,12 @@ main (void)
     op.entryInfo = (entry_t*) calloc (1U, sizeof (entry_t));
     if (op.entryInfo == NULL)
         fatal ("allocating memory");
-
+    loadArchive ();
+    
     clearScreen ();
     displaySplashScreen ();
 
-    FILE *archiveFp = fopen (ARCHIVE, "a+");
-    if (archiveFp == NULL)
-        fatal ("opening archive");
-    loadArchive (archiveFp);
-
-    while ( goToMainMenu (&archiveFp, &op) );
+    while ( goToMainMenu (&op) );
 
     while (entryCount > 0)
       {
@@ -103,7 +107,6 @@ main (void)
         free (entryTable[entryCount]);
       }
     free (op.entryInfo);
-    fclose (archiveFp);
 
     return EXIT_SUCCESS;
 }
@@ -113,34 +116,44 @@ void
 displaySplashScreen (void)
 {
     printf ("\n\n\n\n\t\t[::] Automotive Management System [::]\n\n");
-    printf ("\t\tCollege Software Development Project.\n\n");
+    printf ("\t\tCollege Software Engineering Project.\n\n");
     printf ("\t\tWritten By:\tAristos Miliaressis\n");
-    printf ("\t\t\tAt:\tIEK XINI Athens\n");
-    printf ("\t\t\tIn:\tStandard C11\n");
+    printf ("\t\t\tAt:\tIek XINI Athens\n");
+    printf ("\t\t\tIn:\tStandard C 11\n");
     printf ("\t\t\tDate:\t10/10/2015\n\n\t");
     pause ();
 }
 
 
 void
-loadArchive (FILE *archiveFp)
+loadArchive (void)
 {
-    entry_t *entry = (entry_t*) calloc (1U, sizeof (entry_t));
-
-    while (readEntry (archiveFp, entry))
+    entry_t *entry;
+    FILE *archiveFp;
+    
+    entry = (entry_t*) calloc (1U, sizeof (entry_t));
+    if (entry == NULL)
+        fatal ("allocating memory");
+    
+    archiveFp = fopen (ARCHIVE, "r");
+    if (archiveFp == NULL)
+        fatal ("openning archive");
+    
+    while (readNextEntry (archiveFp, entry))
       {
         entryTable[entryCount] = entry;
         entryCount++;
         entry = (entry_t*) calloc (1U, sizeof (entry_t));
       }
 
+    fclose (archiveFp);
     free (entry);
     entryTable[entryCount] = NULL;
 }
 
 
 bool
-goToMainMenu (FILE **archiveFp, operation_t *const op)
+goToMainMenu (operation_t *const op)
 {
     clearScreen ();
     displayMainMenu ();
@@ -180,7 +193,7 @@ goToMainMenu (FILE **archiveFp, operation_t *const op)
       case '6':
         printf ("\n\n\tUpdating '%s' archive..", ARCHIVE);
 
-        updateArchive (archiveFp, op);
+        updateArchive (op);
         break;
 
       case '0':
@@ -291,7 +304,7 @@ printAllDates (void)
         dateList[i] = atoi (entryTable[i]->date);
     i--;
 
-    i = removeDuplicate (dateList, i);
+    i = removeDuplicateInt (dateList, i);
 
     quicksort (dateList, 0, i);
 
@@ -309,7 +322,7 @@ createNewEntry (operation_t *const op)
 {
     enterCarInfo (op->entryInfo);
 
-    if (getIndexFromID (op->entryInfo->id) != -1)
+    if (getIndexFromID (op->entryInfo->id) == -1)
       {
         op->opType = APPEND;
         printf ("\n\n\tEntry created successfully!");
@@ -371,7 +384,7 @@ modifyEntry (operation_t *const op)
         strcpy (op->oldId, op->entryInfo->id);
 
         enterCarInfo (op->entryInfo);
-        if (getIndexFromID (op->entryInfo->id) != -1 
+        if (getIndexFromID (op->entryInfo->id) == -1 
             || i == atoi (op->entryInfo->id))
           {
             op->opType = OVERWRITE;
@@ -388,25 +401,27 @@ modifyEntry (operation_t *const op)
 
 
 void
-updateArchive (FILE **archiveFp, operation_t *const op)
+updateArchive (operation_t *const op)
 {
+    size_t index;
+    
     if (op->opType == APPEND)
       {
-        writeToArchive (archiveFp, NULL, op->entryInfo);
+        appendToArchive (op->entryInfo);
         entryTable[entryCount] = (entry_t*) calloc (1U, sizeof (entry_t));
         copyEntry (entryTable[entryCount], op->entryInfo);
         entryCount++;
       }
     else if (op->opType == OVERWRITE)
       {
-        writeToArchive (archiveFp, op->oldId, op->entryInfo);
-        size_t index = (size_t) getIndexFromID (op->oldId);
+        writeNewArchive (op->oldId, op->entryInfo);
+        index = (size_t) getIndexFromID (op->oldId);
         copyEntry (entryTable[index], op->entryInfo);
       }
     else if (op->opType == REMOVE)
       {
-        writeToArchive (archiveFp, op->entryInfo->id, NULL);
-        size_t index = (size_t) getIndexFromID (op->entryInfo->id);
+        writeNewArchive (op->entryInfo->id, NULL);
+        index = (size_t) getIndexFromID (op->entryInfo->id);
         free (entryTable[index]);
         for (; index <= entryCount; index++)
             entryTable[index] = entryTable[index+1];
@@ -537,7 +552,7 @@ enterCarInfo (entry_t *const entry)
             break;
 
         printf ("\n\tInvalid ID provided!");
-        printf ("\n\tAcceptable IDs are between %u and %u.\n",
+        printf ("\n\tAcceptable IDs are between %u and %u.\n", 
                 MIN_ID, MAX_ID);
       }
     while (true);
@@ -560,7 +575,7 @@ enterCarInfo (entry_t *const entry)
             break;
 
         printf ("\n\tInvalid date provided!");
-        printf ("\n\tAcceptable dates are between %u and %u.",
+        printf ("\n\tAcceptable dates are between %u and %u.", 
                 MIN_DATE, MAX_DATE);
       }
     while (true);
@@ -582,7 +597,7 @@ displayEntryRow (const entry_t *const entry)
 
 
 void
-displayEntryTable (entry_t *table[])
+displayEntryTable (entry_t **table)
 {
     size_t i = 0;
 
@@ -594,7 +609,8 @@ displayEntryTable (entry_t *table[])
       }
 
     if (i == 0U)
-        printf ("\n\t|                       No Entrys Found!                        |");
+        printf ("\n\t|                       No Entrys Found!"\
+                "                        |");
 
     displayTableFooter ();
     pause ();
@@ -602,7 +618,7 @@ displayEntryTable (entry_t *table[])
 
 
 bool
-readEntry (FILE *archiveFp, entry_t *const entry)
+readNextEntry (FILE *archiveFp, entry_t *const entry)
 {
     return !(  !csvReadNextVal (archiveFp, entry->id)
             || !csvReadNextVal (archiveFp, entry->color)
@@ -646,52 +662,49 @@ findAllMatching (char *key, const char col, const char operand)
     size_t resultCount = 0;
 
     strToUpper (key);
-    if ((col == ID_COL || col == DATE_COL) && operand != '\0')
+    if ((col == COL_ID || col == COL_DATE) && operand != '\0')
         key++;
 
     for (size_t i = 0; i < entryCount; i++)
       {
         switch (col)
           {
-          case ID_COL:
+          case COL_ID:
             {
               if ((operand == '>'  && atoi (entryTable[i]->id) > atoi (key))
                || (operand == '<'  && atoi (entryTable[i]->id) < atoi (key))
                || (operand == '\0' && atoi (entryTable[i]->id) == atoi (key)))
-                {
-                  resultTable[resultCount] = entryTable[i];
-                  resultCount++;
-                }
+                   resultTable[resultCount] = entryTable[i];
+              else
+                  continue;
               break;
             }
-          case COLOR_COL:
+          case COL_COLOR:
             {
               if (strncmp (key, entryTable[i]->color, strlen (key)) == 0)
-                {
                   resultTable[resultCount] = entryTable[i];
-                  resultCount++;
-                }
+              else
+                  continue;
               break;
             }
-          case MANUFACT_COL:
+          case COL_MANUFACT:
             {
               if (strncmp (key, entryTable[i]->manufact, strlen (key)) == 0)
-                {
                   resultTable[resultCount] = entryTable[i];
-                  resultCount++;
-                }
+              else
+                  continue;
               break;
             }
-          case DATE_COL:
+          case COL_DATE:
             {
               if ((operand == '>' && atoi (entryTable[i]->date) > atoi (key))
                || (operand == '<' && atoi (entryTable[i]->date) < atoi (key)))
-                {
                   resultTable[resultCount] = entryTable[i];
-                  resultCount++;
-                }
+              else
+                  continue;
             }
           }
+        resultCount++;
       }
 
     return resultTable;
@@ -710,78 +723,82 @@ getIndexFromID (const char *const entryId)
 }
 
 
+void 
+appendToArchive (const entry_t *const entry)
+{
+    FILE *archiveFp = fopen(ARCHIVE, "a");
+    if (archiveFp == NULL)
+        fatal ("openning archive");
+    
+    fprintf (archiveFp, "%s,%s,%s,%s,",
+            entry->id, entry->color,
+            entry->manufact, entry->date);
+    
+    fflush (archiveFp);
+    fclose (archiveFp);
+}
+
+
 void
-writeToArchive (FILE **archiveFp,
-                const char *const entryId,
-                const entry_t *const entry)
+writeNewArchive (const char *const entryId, const entry_t *const entry)
 {
     const char tmpFileName[] = "fRpZX6EPZV";
-    entry_t tmpEntry = {{0}, {0}, {0}, {0}};
+    entry_t tmpEntry = {{0}};
 
-    /* Append Entry */
-    if (entryId == NULL)
-      {
-        fseek (*archiveFp, -1, SEEK_END);
-        fprintf (*archiveFp, "%s,%s,%s,%s,",
-                entry->id,
-                entry->color,
-                entry->manufact,
-                entry->date);
-        fflush (*archiveFp);
-        return;
-      }
-
+    FILE *archiveFp = fopen (ARCHIVE, "r");
+    if (archiveFp == NULL)
+        fatal ("opening archive");
+    
     FILE *tmpFp = fopen (tmpFileName, "w");
     if (tmpFp == NULL)
         fatal ("opening temporary file");
 
-    rewind (*archiveFp);
-    while (readEntry (*archiveFp, &tmpEntry))
+    /* Copy up to subject entry */
+    rewind (archiveFp);
+    while (readNextEntry (archiveFp, &tmpEntry))
       {
         if (!strcmp (entryId, tmpEntry.id))
             break;
 
         fprintf (tmpFp, "%s,%s,%s,%s,",
-                 tmpEntry.id,
-                 tmpEntry.color,
-                 tmpEntry.manufact,
-                 tmpEntry.date);
+                 tmpEntry.id, tmpEntry.color,
+                 tmpEntry.manufact, tmpEntry.date);
         fflush (tmpFp);
       }
 
-    /* Overwrite Entry */
+    /* Write modified entry */
     if (entry != NULL)
       {
         fprintf (tmpFp, "%s,%s,%s,%s,",
-                 entry->id,
-                 entry->color,
-                 entry->manufact,
-                 entry->date);
+                 entry->id, entry->color,
+                 entry->manufact, entry->date);
         fflush (tmpFp);
       }
 
-    while (readEntry (*archiveFp, &tmpEntry))
+    /* Copy remaining entrys */
+    while (readNextEntry (archiveFp, &tmpEntry))
       {
         fprintf (tmpFp, "%s,%s,%s,%s,",
-                 tmpEntry.id,
-                 tmpEntry.color,
-                 tmpEntry.manufact,
-                 tmpEntry.date);
+                 tmpEntry.id, tmpEntry.color,
+                 tmpEntry.manufact, tmpEntry.date);
         fflush (tmpFp);
       }
-    fclose (*archiveFp);
+    fclose (archiveFp);
     fclose (tmpFp);
+    
+    replaceOldArchive (tmpFileName);
+}
 
+
+void 
+replaceOldArchive (const char *const oldArchive)
+{
     int ret = remove (ARCHIVE);
     if (ret == -1)
         fatal ("removing outdated archive");
 
-    ret = rename (tmpFileName, ARCHIVE);
+    ret = rename (oldArchive, ARCHIVE);
     if (ret == -1)
         fatal ("renaming archive");
-
-    *archiveFp = fopen (ARCHIVE, "a+");
-    if (*archiveFp == NULL)
-        fatal ("reopening archive");
 }
 
