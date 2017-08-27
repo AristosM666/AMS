@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -pedantic -g -c
+CFLAGS=-Wno-missing-field-initializers -Wstrict-overflow -fno-strict-aliasing -Werror -Wshadow -Wall -Wextra -pedantic -c
 CSTD=-std=c11
 SRC=src/main.c src/misc.c
 OBJ=main.o misc.o
