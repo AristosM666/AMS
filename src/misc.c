@@ -6,12 +6,12 @@
 #include <stdio_ext.h>
 
 
-static intmax_t partition (int16_t arr[], intmax_t lo, intmax_t hi);
+static intmax_t partition (int16_t arr[], const intmax_t lo, const intmax_t hi);
 static void swap (int16_t *lval, int16_t *rval);
 
 
 void
-quicksort (int16_t arr[], intmax_t lo, intmax_t hi)
+quicksort (int16_t arr[], const intmax_t lo, const intmax_t hi)
 {
     if (lo < hi)
       {
@@ -23,7 +23,7 @@ quicksort (int16_t arr[], intmax_t lo, intmax_t hi)
 
 
 static intmax_t
-partition (int16_t arr[], intmax_t lo, intmax_t hi)
+partition (int16_t arr[], const intmax_t lo, const intmax_t hi)
 {
     int16_t pivotValue = arr[hi];
     intmax_t pivotIndex = lo;
@@ -52,7 +52,7 @@ swap (int16_t *lval, int16_t *rval)
 
 
 size_t
-removeDuplicateStr (char *arr[], size_t nmemb)
+removeDuplicateStr (char *arr[], const size_t nmemb)
 {
     char **end = arr + nmemb - 1;
     size_t count = 0;
@@ -78,7 +78,7 @@ removeDuplicateStr (char *arr[], size_t nmemb)
 
 
 size_t
-removeDuplicateInt (int16_t arr[], size_t nmemb)
+removeDuplicateInt (int16_t arr[], const size_t nmemb)
 {
     int16_t *end = arr + nmemb - 1;
     size_t count = 0;
@@ -103,12 +103,13 @@ removeDuplicateInt (int16_t arr[], size_t nmemb)
 
 
 bool
-csvReadNextVal (FILE *fp, char *dest)
+csvReadNextVal (FILE * const fp, char *dest)
 {
     char ch;
 
     while (!feof (fp))
       {
+        fflush (fp);
         ch = (char) fgetc (fp);
         if (ch == ',')
           {
@@ -124,28 +125,34 @@ csvReadNextVal (FILE *fp, char *dest)
 
 
 size_t
-getString (char *dest, size_t size)
+getString (char *dest, const size_t size)
 {
-    fflush (stdin);
-    fgets (dest, (int) size, stdin);
-    size_t len = strlen (dest);
-
-    if (len == size - 1)
-        getchar ();
-
-    if (dest[strlen (dest)-1] == '\n')
-      {
-        dest[strlen (dest)-1] = '\0';
-        len--;
-      }
+    size_t len = 0;
+    char ch;
     
-    __fpurge (stdin);
+    do
+      {
+        fflush (stdin);
+        ch = (char) getchar ();
+        if (len < size - 1)
+          {
+            dest[len] = ch;
+            len++;
+          }
+      }
+    while (ch != '\n');
+    
+    if (dest[len - 1] == '\n')
+        len--;
+
+    dest[len] = '\0';
+
     return len;
 }
 
 
 bool
-isIntBetween (char *src, intmax_t min, intmax_t max)
+isIntBetween (const char *src, const intmax_t min, const intmax_t max)
 {
     for (size_t i = 0; i < strlen (src); i++)
       {
@@ -177,22 +184,20 @@ parseWhiteSpace (char *str)
     while (ch != '\0');
 }
 
-void
-pause (void)
-{
-    fflush (stdin);
-    printf ("\tPress [ Enter ] to continue...");
-    getchar ();
-}
 
 void
-fatal (char *errMsg)
+fatal (const char *errMsg)
 {
     clearScreen ();
+    
     fprintf (stderr, "\n\n\t\tFailed while %s!", errMsg);
+    fflush (stderr);
+    
     perror ("\n\n\t\tERROR");
-    __fpurge(stdout);
+    fflush (stderr);
+    
     printf ("\n\t");
+    fflush (stdout);
     pause ();
 
     clearScreen ();
@@ -201,16 +206,29 @@ fatal (char *errMsg)
 
 
 void
-clearScreen (void)
+pause (void)
 {
-    printf ("\033[H\033[2J");
+    printf ("\tPress [ Enter ] to continue...");
+    fflush (stdout);
+    
+    fflush (stdin);
+    getchar ();
 }
 
 
 void
+clearScreen (void)
+{
+    printf ("\033[H\033[2J");
+    fflush (stdout);
+}
+
+
+char *
 strToUpper (char *str)
 {
     for (size_t i = 0; i < strlen (str); i++)
         str[i] = (char) toupper (str[i]);
+    return str;
 }
 
