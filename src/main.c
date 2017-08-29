@@ -154,7 +154,7 @@ goToMainMenu (operation_t *const op)
     switch (option)
       {
       case '1':
-        printf ("\n\n\t[*] Display All (%zu) Entrys [*]\n\n", entryCount);
+        printf ("\n\n\t\t[*] Display All (%zu) Entrys [*]\n\n", entryCount);
         fflush (stdout);
               
         displayEntryTable (entryTable);
@@ -399,7 +399,7 @@ modifyEntry (operation_t *const op)
     else
       {
         clearScreen ();
-        printf ("\n\n\t[*] Enter New Info [*]\n\n");
+        printf ("\n\n\t\t[*] Enter New Info [*]\n\n");
         fflush (stdout);
           
         displayTableHeader ();
@@ -497,7 +497,7 @@ goToSearchMenu (void)
     entry_t **resultTable = findAllMatching (searchKey, option, searchKey[0]);
 
     clearScreen ();
-    printf ("\n\n\t[*] Search Results [*]\n\n");
+    printf ("\n\n\t\t[*] Search Results [*]\n\n");
     fflush (stdout);
     displayEntryTable (resultTable);
 
@@ -542,10 +542,10 @@ displaySearchMenu (void)
 void
 displayTableHeader (void)
 {
-    printf ("\t ________________________________"\
+    printf ("\t\t ________________________________"\
             "_______________________________\n"\
-            "\t| ID  \t\tColor\t\tManufacturer\t\tDate\t|\n"\
-            "\t|-----------------------------"\
+            "\t\t| ID  \t\tColor\t\tManufacturer\t\tDate\t|\n"\
+            "\t\t|-----------------------------"\
             "----------------------------------|");
     fflush (stdout);
 }
@@ -554,7 +554,7 @@ displayTableHeader (void)
 void
 displayTableFooter (void)
 {
-    printf ("\n\t|____________________________"\
+    printf ("\n\t\t|____________________________"\
             "___________________________________|\n");
     fflush (stdout);
 }
@@ -635,7 +635,7 @@ displayEntryRow (const entry_t *const entry)
     if (strlen (tmp) < 8)
         strcat (tmp, "\t");
 
-    printf ("\n\t| %s\t\t%s\t\t%s\t\t%s\t|",
+    printf ("\n\t\t| %s\t\t%s\t\t%s\t\t%s\t|",
             entry->id, entry->color, tmp, entry->date);
     fflush (stdout);
 }
