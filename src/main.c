@@ -161,7 +161,7 @@ goToMainMenu (operation_t *const op)
         break;
 
       case '2':
-        printf ("\n\n\t[*] Create New Entry [*]\n\n");
+        printf ("\n\n\t[*] Create New Entry [*]\n");
         fflush (stdout);
               
         createNewEntry (op);
@@ -405,7 +405,6 @@ modifyEntry (operation_t *const op)
         displayTableHeader ();
         displayEntryRow (op->entryInfo);
         displayTableFooter ();
-        printf ("\n\t");
 
         int i = atoi (op->entryInfo->id);
         strcpy (op->oldId, op->entryInfo->id);
@@ -581,7 +580,7 @@ enterCarInfo (entry_t *const entry)
 {
     do
       {
-        printf ("\n\tEntry's ID (%u..%u): ", MIN_ID, MAX_ID);
+        printf ("\n\n\tEntry's ID (%u..%u): ", MIN_ID, MAX_ID);
         fflush (stdout);
           
         getString (entry->id, sizeof (entry->id));
