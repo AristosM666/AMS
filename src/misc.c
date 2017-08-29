@@ -196,8 +196,6 @@ fatal (const char *errMsg)
     perror ("\n\n\t\tERROR");
     fflush (stderr);
     
-    printf ("\n\t");
-    fflush (stdout);
     pause ();
 
     clearScreen ();
@@ -208,7 +206,7 @@ fatal (const char *errMsg)
 void
 pause (void)
 {
-    printf ("\tPress [ Enter ] to continue...");
+    printf ("\n\t\tPress [ Enter ] to continue...");
     fflush (stdout);
     
     fflush (stdin);
