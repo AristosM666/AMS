@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+#define flush_stdin() char ch; do { ch = getchar (); } while (ch != '\n' && ch != EOF);
 
 void quicksort (int16_t arr[], const intmax_t lo, const intmax_t hi);
 size_t removeDuplicateStr (char *arr[], const size_t nmemb);
