@@ -35,10 +35,10 @@ typedef struct Entry entry_t;
 entry_t *entryTable[MAX_ENTRYS];
 size_t entryCount = 0;
 
-
+typedef enum { INVALID=0, REMOVE, OVERWRITE, APPEND } op_t;
 struct Operation
 {
-    enum { INVALID=0, REMOVE, OVERWRITE, APPEND } opType;
+    op_t opType;
     entry_t *entryInfo;
     char oldId[5];
 };
@@ -79,7 +79,7 @@ void replaceOldArchive (const char *const oldArchive);
 int
 main (void)
 {
-    operation_t op = {0};
+    operation_t op = {INVALID, NULL, {'\0'}};
     
     op.entryInfo = (entry_t*) calloc (1U, sizeof (entry_t));
     if (op.entryInfo == NULL)
@@ -146,9 +146,11 @@ loadArchive (void)
 bool
 goToMainMenu (operation_t *const op)
 {
+    char option;
+    
     clearScreen ();
     displayMainMenu ();
-    char option = getUserOption ();
+    option = getUserOption ();
 
     clearScreen ();
     switch (option)
@@ -196,7 +198,7 @@ goToMainMenu (operation_t *const op)
         return false;
       }
 
-  return true;
+    return true;
 }
 
 
@@ -226,16 +228,16 @@ printAllIDs (void)
         return;
 
     for (i = 0; i < entryCount; i++)
-        idList[i] = atoi (entryTable[i]->id);
+        idList[i] = (int16_t) atoi (entryTable[i]->id);
 
-    quicksort (idList, 0, i-1);
+    quicksort (idList, 0, (intmax_t) i-1);
 
-    printf ("\n\tIDs: %u", idList[0]);
+    printf ("\n\tIDs: %d", idList[0]);
     fflush (stdout);
     
     for (i = 1; i < entryCount; i++)
     {
-        printf (", %u", idList[i]);
+        printf (", %d", idList[i]);
         fflush (stdout);
     }
     
@@ -312,19 +314,19 @@ printAllDates (void)
         return;
 
     for (i = 0; i < entryCount; i++)
-        dateList[i] = atoi (entryTable[i]->date);
+        dateList[i] = (int16_t) atoi (entryTable[i]->date);
     i--;
 
     i = removeDuplicateInt (dateList, i);
 
-    quicksort (dateList, 0, i);
+    quicksort (dateList, 0, (intmax_t) i);
 
-    printf ("\n\tManufact Dates: %u", dateList[0]);
+    printf ("\n\tManufact Dates: %d", dateList[0]);
     fflush (stdout);
     
     for (j = 1; j <= i; j++)
     {
-        printf (", %u", dateList[j]);
+        printf (", %d", dateList[j]);
         fflush (stdout);
     }
     
@@ -398,6 +400,7 @@ modifyEntry (operation_t *const op)
       }
     else
       {
+        int i;
         clearScreen ();
         printf ("\n\n\t\t[*] Enter New Info [*]\n\n");
         fflush (stdout);
@@ -406,7 +409,7 @@ modifyEntry (operation_t *const op)
         displayEntryRow (op->entryInfo);
         displayTableFooter ();
 
-        int i = atoi (op->entryInfo->id);
+        i = atoi (op->entryInfo->id);
         strcpy (op->oldId, op->entryInfo->id);
 
         enterCarInfo (op->entryInfo);
@@ -468,9 +471,12 @@ updateArchive (operation_t *const op)
 bool
 goToSearchMenu (void)
 {
+    char option, *searchKey;
+    entry_t **resultTable;
+    
     clearScreen ();
     displaySearchMenu ();
-    char option = getUserOption ();
+    option = getUserOption ();
 
     switch (option)
       {
@@ -492,8 +498,8 @@ goToSearchMenu (void)
           return true;
       }
 
-    char *searchKey = getSearchTerm ();
-    entry_t **resultTable = findAllMatching (searchKey, option, searchKey[0]);
+    searchKey = getSearchTerm ();
+    resultTable = findAllMatching (searchKey, option, searchKey[0]);
 
     clearScreen ();
     printf ("\n\n\t\t[*] Search Results [*]\n\n");
@@ -562,12 +568,12 @@ displayTableFooter (void)
 char
 getUserOption (void)
 {
-    char *str = (char*) calloc (1U, 30U);
+    char ch, *str = (char*) calloc (1U, 30U);
 
     getString (str, 30U);
     parseWhiteSpace (str);
 
-    char ch = str[0];
+    ch = str[0];
     free (str);
     str = NULL;
 
@@ -705,7 +711,7 @@ copyEntry (entry_t *const dest, const entry_t *const src)
 entry_t **
 findAllMatching (char *key, const char col, const char operand)
 {
-    entry_t **resultTable = calloc (entryCount, sizeof (entry_t*));
+    entry_t **resultTable = (entry_t**) calloc (entryCount, sizeof (entry_t*));
     size_t resultCount = 0;
 
     strToUpper (key);
@@ -793,13 +799,14 @@ void
 writeNewArchive (const char *const entryId, const entry_t *const entry)
 {
     const char tmpFileName[] = "fRpZX6EPZV";
-    entry_t tmpEntry = {{0}};
+    entry_t tmpEntry = {{0}, {0}, {0}, {0}};
+    FILE *tmpFp, *archiveFp;
 
-    FILE *archiveFp = fopen (ARCHIVE, "r");
+    archiveFp = fopen (ARCHIVE, "r");
     if (archiveFp == NULL)
         fatal ("opening archive");
     
-    FILE *tmpFp = fopen (tmpFileName, "w");
+    tmpFp = fopen (tmpFileName, "w");
     if (tmpFp == NULL)
         fatal ("opening temporary file");
 
