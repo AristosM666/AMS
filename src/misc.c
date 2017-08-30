@@ -107,9 +107,8 @@ csvReadNextVal (FILE * const fp, char *dest)
 {
     char ch;
 
-    while (!feof (fp))
+    do
       {
-        fflush (fp);
         ch = (char) fgetc (fp);
         if (ch == ',')
           {
@@ -119,6 +118,7 @@ csvReadNextVal (FILE * const fp, char *dest)
         *dest = ch;
         dest++;
       }
+    while (ch != EOF);
 
     return false;
 }
@@ -132,7 +132,6 @@ getString (char *dest, const size_t size)
     
     do
       {
-        fflush (stdin);
         ch = (char) getchar ();
         if (len < size - 1)
           {
@@ -140,7 +139,7 @@ getString (char *dest, const size_t size)
             len++;
           }
       }
-    while (ch != '\n');
+    while (ch != '\n' && ch != EOF);
     
     if (dest[len - 1] == '\n')
         len--;
@@ -209,8 +208,7 @@ pause (void)
     printf ("\n\t\tPress [ Enter ] to continue...");
     fflush (stdout);
     
-    fflush (stdin);
-    getchar ();
+    flush_stdin ();
 }
 
 
