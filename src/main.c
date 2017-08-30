@@ -352,8 +352,7 @@ createNewEntry (operation_t *const op)
         printf ("\n\tError ID '%s' already in use..", op->entryInfo->id);
         fflush (stdout);
       }
-    fflush (stdin);
-    getchar ();
+    flush_stdin ();
 }
 
 
@@ -378,8 +377,7 @@ removeEntry (operation_t *const op)
         printf ("\n\tEntry removed successfully!");
         fflush (stdout);
       }
-    fflush (stdin);
-    getchar ();
+    flush_stdin ();
 }
 
 
@@ -427,8 +425,7 @@ modifyEntry (operation_t *const op)
             fflush (stdout);
           }
       }
-    fflush (stdin);
-    getchar ();
+    flush_stdin ();
 }
 
 
@@ -463,8 +460,7 @@ updateArchive (operation_t *const op)
     printf ("\n\n\tUpdated archive successfully!");
     fflush (stdout);
     
-    fflush (stdin);
-    getchar ();
+    flush_stdin ();
 }
 
 
