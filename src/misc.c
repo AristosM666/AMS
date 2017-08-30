@@ -185,7 +185,7 @@ parseWhiteSpace (char *str)
 }
 
 
-void
+__attribute__((noreturn)) void
 fatal (const char *errMsg)
 {
     clearScreen ();
