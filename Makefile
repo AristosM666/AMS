@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wno-missing-field-initializers -Wstrict-overflow -fno-strict-aliasing -Werror -Wshadow -Wall -Wextra -pedantic -c
+CFLAGS=-Werror -Wall -Wextra -Wshadow -pedantic -c
 CSTD=-std=c11
 SRC=src/main.c src/misc.c
 OBJ=main.o misc.o
@@ -13,4 +13,4 @@ link: compile
 
 .PHONEY:
 compile: $(SRC)
-	$(CC) $(CSTD) $(CFLAGS) $(SRC)
+	$(CC) $(CSTD) $(CFLAGS) $(SRC) 
