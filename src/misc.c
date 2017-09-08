@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include <stdio_ext.h>
 
 
 static intmax_t partition (int16_t arr[], const intmax_t lo, const intmax_t hi);
@@ -15,7 +14,7 @@ quicksort (int16_t arr[], const intmax_t lo, const intmax_t hi)
 {
     if (lo < hi)
       {
-        intmax_t p = partition (arr, lo, hi);
+        const intmax_t p = partition (arr, lo, hi);
         quicksort (arr, lo, p - 1);
         quicksort (arr, p + 1, hi);
       }
@@ -25,7 +24,7 @@ quicksort (int16_t arr[], const intmax_t lo, const intmax_t hi)
 static intmax_t
 partition (int16_t arr[], const intmax_t lo, const intmax_t hi)
 {
-    int16_t pivotValue = arr[hi];
+    const int16_t pivotValue = arr[hi];
     intmax_t pivotIndex = lo;
 
     for (intmax_t i = lo; i <= hi - 1; i++)
@@ -43,9 +42,9 @@ partition (int16_t arr[], const intmax_t lo, const intmax_t hi)
 
 
 static void
-swap (int16_t *lval, int16_t *rval)
+swap (int16_t *const lval, int16_t *const rval)
 {
-    int16_t tmp = *lval;
+    const int16_t tmp = *lval;
     *lval = *rval;
     *rval = tmp;
 }
@@ -103,13 +102,13 @@ removeDuplicateInt (int16_t arr[], const size_t nmemb)
 
 
 bool
-csvReadNextVal (FILE * const fp, char *dest)
+csvReadNextVal (FILE *const fp, char *dest)
 {
     char ch;
 
     do
       {
-        ch = (char) fgetc (fp);
+        ch = fgetc (fp);
         if (ch == ',')
           {
             *dest = '\0';
@@ -125,14 +124,14 @@ csvReadNextVal (FILE * const fp, char *dest)
 
 
 size_t
-getString (char *dest, const size_t size)
+getString (char *const dest, const size_t size)
 {
     size_t len = 0;
     char ch;
     
     do
       {
-        ch = (char) getchar ();
+        ch = getchar ();
         if (len < size - 1)
           {
             dest[len] = ch;
@@ -151,7 +150,7 @@ getString (char *dest, const size_t size)
 
 
 bool
-isIntBetween (const char *src, const intmax_t min, const intmax_t max)
+isIntBetween (const char *const src, const intmax_t min, const intmax_t max)
 {
     for (size_t i = 0; i < strlen (src); i++)
       {
@@ -164,7 +163,7 @@ isIntBetween (const char *src, const intmax_t min, const intmax_t max)
 
 
 void
-parseWhiteSpace (char *str)
+parseWhiteSpace (char *const str)
 {
     size_t i = 0;
     char ch;
@@ -181,24 +180,6 @@ parseWhiteSpace (char *str)
             i++;
       }
     while (ch != '\0');
-}
-
-
-__attribute__((noreturn)) void
-fatal (const char *errMsg)
-{
-    clearScreen ();
-    
-    fprintf (stderr, "\n\n\t\tFailed while %s!", errMsg);
-    fflush (stderr);
-    
-    perror ("\n\n\t\tERROR");
-    fflush (stderr);
-    
-    pause ();
-
-    clearScreen ();
-    exit (EXIT_FAILURE);
 }
 
 
@@ -221,10 +202,39 @@ clearScreen (void)
 
 
 char *
-strToUpper (char *str)
+strToUpper (char *const str)
 {
     for (size_t i = 0; i < strlen (str); i++)
-        str[i] = (char) toupper (str[i]);
+        str[i] = toupper (str[i]);
     return str;
+}
+
+
+void flush_stdin (void)
+{
+    char ch; 
+    do 
+      { 
+        ch = getchar (); 
+      } 
+    while (ch != '\n' && ch != EOF);
+}
+
+
+__attribute__((noreturn)) void
+fatal (const char *const errMsg)
+{
+    clearScreen ();
+    
+    fprintf (stderr, "\n\n\t\tFailed while %s!", errMsg);
+    fflush (stderr);
+    
+    perror ("\n\n\t\tERROR");
+    fflush (stderr);
+    
+    pause ();
+
+    clearScreen ();
+    exit (EXIT_FAILURE);
 }
 
