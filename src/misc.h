@@ -1,10 +1,12 @@
 #pragma once
 
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
 
+#ifndef SIZE_T_MAX
+#define SIZE_T_MAX (size_t) -1
+#endif
 
 void quicksort (int16_t arr[], intmax_t lo, intmax_t hi);
 size_t removeDuplicateStr (char *arr[], size_t nmemb);
