@@ -1,4 +1,6 @@
 /* [08/30/2016 06:19:47 PM] */
+#define _POSIX_C_SOURCE 200112L
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,40 +8,32 @@
 #include "misc.h"
 
 
-const char   ARCHIVE[]  = "ams_archive.csv";
-const size_t SIZE_T_MAX = (size_t) -1;
-
-#define COL_ID '1'
-#define COL_COLOR '2'
-#define COL_MANUFACT '3'
-#define COL_DATE '4'
-
 const uint16_t MIN_DATE = 1960U;
 const uint16_t MAX_DATE = 2006U;
 const uint16_t MIN_ID = 1000U;
 const uint16_t MAX_ID = 9999U;
 
-typedef struct  
+typedef enum { ID='1', COLOR='2', MANUFACT='3', DATE='4' } TableColumn;
+typedef struct
 {
     char id[5];
     char color[30];
     char manufact[30];
     char date[5];
-} 
+}
 Car;
 
+const char ARCHIVE[] = "ams_archive.csv";
 
-#define MAX_ENTRYS 512
-Car *entryTable[MAX_ENTRYS];
-size_t entryCount = 0U;
+#define MAX_ENTRYS 512 Car *entryTable[MAX_ENTRYS]; size_t entryCount = 0U;
 
 typedef enum { INVALID, REMOVE, OVERWRITE, APPEND } OperType;
-typedef struct 
+typedef struct
 {
     OperType opType;
     Car *carInfo;
     char prevID[5];
-} 
+}
 Operation;
 
 
@@ -68,7 +62,7 @@ void loadArchive (void);
 void copyEntry (Car *dest, const Car *src);
 size_t getIndexFromID (const char *entryId);
 bool lookupEntryByID (const char *id, Car *entry);
-Car **findAllMatching (char *key, const char col, const char operand);
+Car **findAllMatching (char *key, TableColumn col, const char operand);
 void writeNewArchive (const char *entryId, const Car *entry);
 void appendToArchive (const Car *entry);
 void replaceOldArchive (const char *oldArchive);
@@ -78,12 +72,12 @@ int
 main (void)
 {
     Operation op = {INVALID, NULL, {'\0'}};
-    
-    op.carInfo = (Car*) calloc (1U, sizeof (Car));
+
+    op.carInfo = (Car*) malloc (sizeof (Car));
     if (op.carInfo == NULL)
         fatal ("allocating memory");
     loadArchive ();
-    
+
     clearScreen ();
     displaySplashScreen ();
 
@@ -117,19 +111,19 @@ displaySplashScreen (void)
 void
 loadArchive (void)
 {
-    Car *entry = (Car*) calloc (1U, sizeof (Car));
+    Car *entry = (Car*) malloc (sizeof (Car));
     if (entry == NULL)
         fatal ("allocating memory");
-    
+
     FILE *const archiveFp = fopen (ARCHIVE, "r");
     if (archiveFp == NULL)
         fatal ("openning archive");
-    
+
     while (readNextEntry (archiveFp, entry))
       {
         entryTable[entryCount] = entry;
         entryCount++;
-        entry = (Car*) calloc (1U, sizeof (Car));
+        entry = (Car*) malloc (sizeof (Car));
       }
 
     fclose (archiveFp);
@@ -151,47 +145,48 @@ goToMainMenu (Operation *const op)
       case '1':
         printf ("\n\n\t\t[*] Display All (%zu) Entrys [*]\n\n", entryCount);
         fflush (stdout);
-              
+
         displayTable (entryTable);
-        break;
+        return true;
 
       case '2':
         printf ("\n\n\t[*] Create New Car [*]\n");
         fflush (stdout);
-              
+
         addCarEntry (op);
-        break;
+        return true;
 
       case '3':
         printf ("\n\n\t[*] Remove Car [*]\n\n");
         fflush (stdout);
 
         removeCarEntry (op);
-        break;
+        return true;
 
       case '4':
         printf ("\n\n\t[*] Modify Car [*]\n\n");
         fflush (stdout);
 
         modifyCarEntry (op);
-        break;
+        return true;
 
       case '5':
         while ( goToSearchMenu () );
-        break;
+        return true;
 
       case '6':
         printf ("\n\n\tUpdating '%s' archive..", ARCHIVE);
         fflush (stdout);
 
         updateArchive (op);
-        break;
+        return true;
 
       case '0':
         return false;
-      }
 
-    return true;
+      default:
+        return true;
+      }
 }
 
 
@@ -216,7 +211,7 @@ printAllIDs (void)
 {
     int16_t *idList = (int16_t*) calloc (entryCount, 2U);
     size_t i;
-    
+
     if (entryCount == 0 || idList == NULL)
         return;
 
@@ -227,13 +222,13 @@ printAllIDs (void)
 
     printf ("\n\tIDs: %d", idList[0]);
     fflush (stdout);
-    
+
     for (i = 1; i < entryCount; i++)
       {
         printf (", %d", idList[i]);
         fflush (stdout);
       }
-    
+
     free (idList);
     idList = NULL;
 }
@@ -256,13 +251,13 @@ printAllColors (void)
 
     printf ("\n\tColors: %s", colorList[0]);
     fflush (stdout);
-    
+
     for (; i > 0; --i)
       {
         printf (", %s", colorList[i]);
         fflush (stdout);
       }
-    
+
     free (colorList);
     colorList = NULL;
 }
@@ -285,13 +280,13 @@ printAllManufacts (void)
 
     printf ("\n\tManufacturer: %s", manufactList[0]);
     fflush (stdout);
-    
+
     for (; i > 0; --i)
       {
         printf (", %s", manufactList[i]);
         fflush (stdout);
       }
-    
+
     free (manufactList);
     manufactList = NULL;
 }
@@ -302,7 +297,7 @@ printAllDates (void)
 {
     int16_t *dateList = (int16_t*) calloc (entryCount, 2U);
     size_t i;
-    
+
     if (entryCount == 0 || dateList == NULL)
         return;
 
@@ -316,13 +311,13 @@ printAllDates (void)
 
     printf ("\n\tManufact Dates: %d", dateList[0]);
     fflush (stdout);
-    
+
     for (size_t j = 1; j <= i; j++)
       {
         printf (", %d", dateList[j]);
         fflush (stdout);
       }
-    
+
     free (dateList);
     dateList = NULL;
 }
@@ -355,7 +350,7 @@ removeCarEntry (Operation *const op)
 
     printf ("\n\n\tEnter car's ID number: ");
     fflush (stdout);
-    
+
     getString (op->carInfo->id, sizeof (op->carInfo->id));
     if (!lookupEntryByID (op->carInfo->id, op->carInfo))
       {
@@ -379,7 +374,7 @@ modifyCarEntry (Operation *const op)
 
     printf ("\n\n\tEnter car's ID number: ");
     fflush (stdout);
-    
+
     getString (op->carInfo->id, sizeof (op->carInfo->id));
     if (!lookupEntryByID (op->carInfo->id, op->carInfo))
       {
@@ -391,7 +386,7 @@ modifyCarEntry (Operation *const op)
         clearScreen ();
         printf ("\n\n\t\t[*] Enter New Info [*]\n\n");
         fflush (stdout);
-          
+
         displayTableHeader ();
         displayTableRow (op->carInfo);
         displayTableFooter ();
@@ -423,7 +418,7 @@ updateArchive (Operation *const op)
     if (op->opType == APPEND)
       {
         appendToArchive (op->carInfo);
-        entryTable[entryCount] = (Car*) calloc (1U, sizeof (Car));
+        entryTable[entryCount] = (Car*) malloc (sizeof (Car));
         copyEntry (entryTable[entryCount], op->carInfo);
         entryCount++;
       }
@@ -445,7 +440,7 @@ updateArchive (Operation *const op)
 
     printf ("\n\n\tUpdated archive successfully!");
     fflush (stdout);
-    
+
     flush_stdin ();
 }
 
@@ -497,11 +492,11 @@ goToSearchMenu (void)
 char *
 getSearchTerm (void)
 {
-    char *searchKey = (char*) calloc (1U, 32U);
+    char *searchKey = (char*) malloc (32U);
 
     printf ("\n\n\tEnter search term: ");
     fflush (stdout);
-    
+
     getString (searchKey, 32U);
     parseWhiteSpace (searchKey);
 
@@ -547,7 +542,7 @@ displayTableFooter (void)
 char
 getUserOption (void)
 {
-    char *str = (char*) calloc (1U, 30U);
+    char *str = (char*) malloc (30U);
 
     getString (str, 30U);
     parseWhiteSpace (str);
@@ -567,13 +562,13 @@ enterCarInfo (Car *const entry)
       {
         printf ("\n\n\tEntry's ID (%u..%u): ", MIN_ID, MAX_ID);
         fflush (stdout);
-          
+
         getString (entry->id, sizeof (entry->id));
         if (isIntBetween (entry->id, MIN_ID, MAX_ID))
             break;
 
         printf ("\n\tInvalid ID provided!"\
-                "\n\tAcceptable IDs are between %u and %u.\n", 
+                "\n\tAcceptable IDs are between %u and %u.\n",
                 MIN_ID, MAX_ID);
         fflush (stdout);
       }
@@ -581,13 +576,13 @@ enterCarInfo (Car *const entry)
 
     printf ("\n\n\tCar's Color: ");
     fflush (stdout);
-    
+
     getString (entry->color, sizeof (entry->color));
     strToUpper (entry->color);
 
     printf ("\n\n\tCar's Manufacturer: ");
     fflush (stdout);
-    
+
     getString (entry->manufact, sizeof (entry->manufact));
     strToUpper (entry->manufact);
 
@@ -602,7 +597,7 @@ enterCarInfo (Car *const entry)
             break;
 
         printf ("\n\tInvalid date provided!"\
-                "\n\tAcceptable dates are between %u and %u.", 
+                "\n\tAcceptable dates are between %u and %u.",
                 MIN_DATE, MAX_DATE);
         fflush (stdout);
       }
@@ -688,20 +683,20 @@ copyEntry (Car *const dest, const Car *const src)
 
 
 Car **
-findAllMatching (char *key, const char col, const char operand)
+findAllMatching (char *key, TableColumn col, const char operand)
 {
     Car **resultTable = (Car**) calloc (entryCount, sizeof (Car*));
     size_t resultCount = 0;
 
     strToUpper (key);
-    if ((col == COL_ID || col == COL_DATE) && operand != '\0')
+    if ((col == ID || col == DATE) && operand != '\0')
         key++;
 
     for (size_t i = 0; i < entryCount; i++)
       {
         switch (col)
           {
-          case COL_ID:
+          case ID:
             {
               if ((operand == '>'  && atoi (entryTable[i]->id) > atoi (key)) ||
                   (operand == '<'  && atoi (entryTable[i]->id) < atoi (key)) ||
@@ -712,7 +707,7 @@ findAllMatching (char *key, const char col, const char operand)
                 }
               break;
             }
-          case COL_COLOR:
+          case COLOR:
             {
               if (strncmp (key, entryTable[i]->color, strlen (key)) == 0)
                 {
@@ -721,7 +716,7 @@ findAllMatching (char *key, const char col, const char operand)
                 }
               break;
             }
-          case COL_MANUFACT:
+          case MANUFACT:
             {
               if (strncmp (key, entryTable[i]->manufact, strlen (key)) == 0)
                 {
@@ -730,7 +725,7 @@ findAllMatching (char *key, const char col, const char operand)
                 }
               break;
             }
-          case COL_DATE:
+          case DATE:
             {
               if ((operand == '>' && atoi (entryTable[i]->date) > atoi (key)) ||
                   (operand == '<' && atoi (entryTable[i]->date) < atoi (key)))
@@ -758,17 +753,17 @@ getIndexFromID (const char *const entryId)
 }
 
 
-void 
+void
 appendToArchive (const Car *const entry)
 {
     FILE *const archiveFp = fopen (ARCHIVE, "a");
     if (archiveFp == NULL)
         fatal ("openning archive");
-    
+
     fprintf (archiveFp, "%s,%s,%s,%s,",
             entry->id, entry->color,
             entry->manufact, entry->date);
-    
+
     fflush (archiveFp);
     fclose (archiveFp);
 }
@@ -783,7 +778,7 @@ writeNewArchive (const char *const entryId, const Car *const entry)
     FILE *const archiveFp = fopen (ARCHIVE, "r");
     if (archiveFp == NULL)
         fatal ("opening archive");
-    
+
     FILE *const tmpFp = fopen (tmpFileName, "w");
     if (tmpFp == NULL)
         fatal ("opening temporary file");
@@ -820,12 +815,12 @@ writeNewArchive (const char *const entryId, const Car *const entry)
       }
     fclose (archiveFp);
     fclose (tmpFp);
-    
+
     replaceOldArchive (tmpFileName);
 }
 
 
-void 
+void
 replaceOldArchive (const char *const oldArchive)
 {
     int ret = remove (ARCHIVE);
