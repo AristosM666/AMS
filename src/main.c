@@ -25,7 +25,9 @@ Car;
 
 const char ARCHIVE[] = "ams_archive.csv";
 
-#define MAX_ENTRYS 512 Car *entryTable[MAX_ENTRYS]; size_t entryCount = 0U;
+#define MAX_ENTRYS 512
+Car *entryTable[MAX_ENTRYS];
+size_t entryCount = 0U;
 
 typedef enum { INVALID, REMOVE, OVERWRITE, APPEND } OperType;
 typedef struct
