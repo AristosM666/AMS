@@ -108,7 +108,7 @@ csvReadNextVal (FILE *const fp, char *dest)
 
     do
       {
-        ch = fgetc (fp);
+        ch = (char) fgetc (fp);
         if (ch == ',')
           {
             *dest = '\0';
@@ -131,7 +131,7 @@ getString (char *const dest, const size_t size)
     
     do
       {
-        ch = getchar ();
+        ch = (char) getchar ();
         if (len < size - 1)
           {
             dest[len] = ch;
@@ -205,7 +205,7 @@ char *
 strToUpper (char *const str)
 {
     for (size_t i = 0; i < strlen (str); i++)
-        str[i] = toupper (str[i]);
+        str[i] = (char) toupper (str[i]);
     return str;
 }
 
@@ -215,7 +215,7 @@ void flush_stdin (void)
     char ch; 
     do 
       { 
-        ch = getchar (); 
+        ch = (char) getchar (); 
       } 
     while (ch != '\n' && ch != EOF);
 }
