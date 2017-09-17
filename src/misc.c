@@ -10,13 +10,13 @@ static void swap (int16_t *lval, int16_t *rval);
 
 
 void
-quicksort (int16_t arr[], const intmax_t lo, const intmax_t hi)
+quickSort (int16_t arr[], const intmax_t lo, const intmax_t hi)
 {
     if (lo < hi)
       {
         const intmax_t p = partition (arr, lo, hi);
-        quicksort (arr, lo, p - 1);
-        quicksort (arr, p + 1, hi);
+        quickSort (arr, lo, p - 1);
+        quickSort (arr, p + 1, hi);
       }
 }
 
@@ -102,7 +102,7 @@ removeDuplicateInt (int16_t arr[], const size_t nmemb)
 
 
 bool
-csvReadNextVal (FILE *const fp, char *dest)
+csvReadValue (FILE *const fp, char *dest)
 {
     char ch;
 
@@ -150,7 +150,7 @@ getString (char *const dest, const size_t size)
 
 
 bool
-isIntBetween (const char *const src, const intmax_t min, const intmax_t max)
+isInRange (const char *const src, const intmax_t min, const intmax_t max)
 {
     for (size_t i = 0; i < strlen (src); i++)
       {
@@ -163,7 +163,7 @@ isIntBetween (const char *const src, const intmax_t min, const intmax_t max)
 
 
 void
-parseWhiteSpace (char *const str)
+stripWhiteSpace (char *const str)
 {
     size_t i = 0;
     char ch;
@@ -189,12 +189,12 @@ pause (void)
     printf ("\n\t\tPress [ Enter ] to continue...");
     fflush (stdout);
     
-    flush_stdin ();
+    flushStdin ();
 }
 
 
 void
-clearScreen (void)
+clearConsole (void)
 {
     printf ("\033[H\033[2J");
     fflush (stdout);
@@ -210,7 +210,7 @@ strToUpper (char *const str)
 }
 
 
-void flush_stdin (void)
+void flushStdin (void)
 {
     char ch; 
     do 
@@ -224,7 +224,7 @@ void flush_stdin (void)
 __attribute__((noreturn)) void
 fatal (const char *const errMsg)
 {
-    clearScreen ();
+    clearConsole ();
     
     fprintf (stderr, "\n\n\t\tFailed while %s!", errMsg);
     fflush (stderr);
@@ -234,7 +234,7 @@ fatal (const char *const errMsg)
     
     pause ();
 
-    clearScreen ();
+    clearConsole ();
     exit (EXIT_FAILURE);
 }
 
