@@ -1,5 +1,5 @@
 /* [08/30/2016 06:19:47 PM] */
-#define _POSIX_C_SOURCE 200112L
+#define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,7 +13,7 @@ const uint16_t MAX_DATE = 2006U;
 const uint16_t MIN_ID = 1000U;
 const uint16_t MAX_ID = 9999U;
 
-typedef enum { ID='1', COLOR='2', MANUFACT='3', DATE='4' } TableColumn;
+typedef enum { ID = '1', COLOR = '2', MANUFACT = '3', DATE = '4' } TableColumn;
 typedef struct
 {
     char id[5];
@@ -25,8 +25,8 @@ Car;
 
 const char ARCHIVE[] = "ams_archive.csv";
 
-#define MAX_ENTRYS 512
-Car *entryTable[MAX_ENTRYS];
+#define MAX_ENTRYS 512 
+Car *entryTable[MAX_ENTRYS]; 
 size_t entryCount = 0U;
 
 typedef enum { INVALID, REMOVE, OVERWRITE, APPEND } OperType;
@@ -80,7 +80,7 @@ main (void)
         fatal ("allocating memory");
     loadArchive ();
 
-    clearScreen ();
+    clearConsole ();
     displaySplashScreen ();
 
     while (goToMainMenu (&op));
@@ -137,11 +137,11 @@ loadArchive (void)
 bool
 goToMainMenu (Operation *const op)
 {
-    clearScreen ();
+    clearConsole ();
     displayMainMenu ();
     const char option = getUserOption ();
 
-    clearScreen ();
+    clearConsole ();
     switch (option)
       {
       case '1':
@@ -220,7 +220,7 @@ printAllIDs (void)
     for (i = 0; i < entryCount; i++)
         idList[i] = (int16_t) atoi (entryTable[i]->id);
 
-    quicksort (idList, 0, i - 1);
+    quickSort (idList, 0, (intmax_t) i - 1);
 
     printf ("\n\tIDs: %d", idList[0]);
     fflush (stdout);
@@ -309,7 +309,7 @@ printAllDates (void)
 
     i = removeDuplicateInt (dateList, i);
 
-    quicksort (dateList, 0, i);
+    quickSort (dateList, 0, (intmax_t) i);
 
     printf ("\n\tManufact Dates: %d", dateList[0]);
     fflush (stdout);
@@ -341,7 +341,7 @@ addCarEntry (Operation *const op)
         printf ("\n\tError ID '%s' already in use..", op->carInfo->id);
       }
     fflush (stdout);
-    flush_stdin ();
+    flushStdin ();
 }
 
 
@@ -365,7 +365,7 @@ removeCarEntry (Operation *const op)
         printf ("\n\tEntry removed successfully!");
       }
     fflush (stdout);
-    flush_stdin ();
+    flushStdin ();
 }
 
 
@@ -385,7 +385,7 @@ modifyCarEntry (Operation *const op)
       }
     else
       {
-        clearScreen ();
+        clearConsole ();
         printf ("\n\n\t\t[*] Enter New Info [*]\n\n");
         fflush (stdout);
 
@@ -410,7 +410,7 @@ modifyCarEntry (Operation *const op)
           }
       }
     fflush (stdout);
-    flush_stdin ();
+    flushStdin ();
 }
 
 
@@ -443,14 +443,14 @@ updateArchive (Operation *const op)
     printf ("\n\n\tUpdated archive successfully!");
     fflush (stdout);
 
-    flush_stdin ();
+    flushStdin ();
 }
 
 
 bool
 goToSearchMenu (void)
 {
-    clearScreen ();
+    clearConsole ();
     displaySearchMenu ();
     const char option = getUserOption ();
 
@@ -477,7 +477,7 @@ goToSearchMenu (void)
     char *searchKey = getSearchTerm ();
     Car **resultTable = findAllMatching (searchKey, option, searchKey[0]);
 
-    clearScreen ();
+    clearConsole ();
     printf ("\n\n\t\t[*] Search Results [*]\n\n");
     fflush (stdout);
     displayTable (resultTable);
@@ -500,7 +500,7 @@ getSearchTerm (void)
     fflush (stdout);
 
     getString (searchKey, 32U);
-    parseWhiteSpace (searchKey);
+    stripWhiteSpace (searchKey);
 
     return strToUpper (searchKey);
 }
@@ -547,7 +547,7 @@ getUserOption (void)
     char *str = (char*) malloc (30U);
 
     getString (str, 30U);
-    parseWhiteSpace (str);
+    stripWhiteSpace (str);
 
     const char ch = str[0];
     free (str);
@@ -566,7 +566,7 @@ enterCarInfo (Car *const entry)
         fflush (stdout);
 
         getString (entry->id, sizeof (entry->id));
-        if (isIntBetween (entry->id, MIN_ID, MAX_ID))
+        if (isInRange (entry->id, MIN_ID, MAX_ID))
             break;
 
         printf ("\n\tInvalid ID provided!"\
@@ -595,7 +595,7 @@ enterCarInfo (Car *const entry)
         fflush (stdout);
         getString (entry->date, sizeof (entry->date));
 
-        if (isIntBetween (entry->date, MIN_DATE, MAX_DATE))
+        if (isInRange (entry->date, MIN_DATE, MAX_DATE))
             break;
 
         printf ("\n\tInvalid date provided!"\
@@ -649,10 +649,10 @@ displayTable (Car **table)
 bool
 readNextEntry (FILE *archiveFp, Car *const entry)
 {
-    return !(  !csvReadNextVal (archiveFp, entry->id)
-            || !csvReadNextVal (archiveFp, entry->color)
-            || !csvReadNextVal (archiveFp, entry->manufact)
-            || !csvReadNextVal (archiveFp, entry->date)
+    return !(  !csvReadValue (archiveFp, entry->id)
+            || !csvReadValue (archiveFp, entry->color)
+            || !csvReadValue (archiveFp, entry->manufact)
+            || !csvReadValue (archiveFp, entry->date)
            );
 }
 
