@@ -10,13 +10,13 @@ static void swap (int16_t *lval, int16_t *rval);
 
 
 void
-quickSort (int16_t arr[], const intmax_t lo, const intmax_t hi)
+quicksort (int16_t arr[], const intmax_t lo, const intmax_t hi)
 {
     if (lo < hi)
       {
         const intmax_t p = partition (arr, lo, hi);
-        quickSort (arr, lo, p - 1);
-        quickSort (arr, p + 1, hi);
+        quicksort (arr, lo, p - 1);
+        quicksort (arr, p + 1, hi);
       }
 }
 
@@ -24,20 +24,20 @@ quickSort (int16_t arr[], const intmax_t lo, const intmax_t hi)
 static intmax_t
 partition (int16_t arr[], const intmax_t lo, const intmax_t hi)
 {
-    const int16_t pivotValue = arr[hi];
-    intmax_t pivotIndex = lo;
+    const int16_t pivot_value = arr[hi];
+    intmax_t pivot_index = lo;
 
     for (intmax_t i = lo; i <= hi - 1; i++)
       {
-        if (arr[i] <= pivotValue)
+        if (arr[i] <= pivot_value)
           {
-            swap (&arr[pivotIndex], &arr[i]);
-            pivotIndex++;
+            swap (&arr[pivot_index], &arr[i]);
+            pivot_index++;
           }
       }
 
-    swap (&arr[pivotIndex], &arr[hi]);
-    return pivotIndex;
+    swap (&arr[pivot_index], &arr[hi]);
+    return pivot_index;
 }
 
 
@@ -51,7 +51,7 @@ swap (int16_t *const lval, int16_t *const rval)
 
 
 size_t
-removeDuplicateStr (char *arr[], const size_t nmemb)
+remove_dup_str (char *arr[], const size_t nmemb)
 {
     char **end = arr + nmemb - 1;
     size_t count = 0;
@@ -63,11 +63,13 @@ removeDuplicateStr (char *arr[], const size_t nmemb)
             if (!strcmp (*current, *arr))
               {
                 if (current != end)
-                    strncpy (*current, *end, sizeof (current));
+                    strncpy (*current, *end, sizeof (char*));
                 end--;
               }
             else
+            {
                 current++;
+            }
           }
         count++;
       }
@@ -77,7 +79,7 @@ removeDuplicateStr (char *arr[], const size_t nmemb)
 
 
 size_t
-removeDuplicateInt (int16_t arr[], const size_t nmemb)
+remove_dup_int (int16_t arr[], const size_t nmemb)
 {
     int16_t *end = arr + nmemb - 1;
     size_t count = 0;
@@ -87,10 +89,7 @@ removeDuplicateInt (int16_t arr[], const size_t nmemb)
         while (current <= end)
           {
             if (*current == *arr)
-              {
-                *current = *end;
-                end--;
-              }
+                *current = *end--;
             else
                 current++;
           }
@@ -102,7 +101,7 @@ removeDuplicateInt (int16_t arr[], const size_t nmemb)
 
 
 bool
-csvReadValue (FILE *const fp, char *dest)
+csv_read_next (FILE *const fp, char *dest)
 {
     char ch;
 
@@ -124,7 +123,7 @@ csvReadValue (FILE *const fp, char *dest)
 
 
 size_t
-getString (char *const dest, const size_t size)
+get_string (char *const dest, const size_t size)
 {
     size_t len = 0;
     char ch;
@@ -150,7 +149,7 @@ getString (char *const dest, const size_t size)
 
 
 bool
-isInRange (const char *const src, const intmax_t min, const intmax_t max)
+is_in_range (const char *const src, const intmax_t min, const intmax_t max)
 {
     for (size_t i = 0; i < strlen (src); i++)
       {
@@ -163,7 +162,7 @@ isInRange (const char *const src, const intmax_t min, const intmax_t max)
 
 
 void
-stripWhiteSpace (char *const str)
+strip_white_space (char *const str)
 {
     size_t i = 0;
     char ch;
@@ -189,12 +188,12 @@ pause (void)
     printf ("\n\t\tPress [ Enter ] to continue...");
     fflush (stdout);
     
-    flushStdin ();
+    flush_stdin ();
 }
 
 
 void
-clearConsole (void)
+clear_console (void)
 {
     printf ("\033[H\033[2J");
     fflush (stdout);
@@ -202,7 +201,7 @@ clearConsole (void)
 
 
 char *
-strToUpper (char *const str)
+str_to_upper (char *const str)
 {
     for (size_t i = 0; i < strlen (str); i++)
         str[i] = (char) toupper (str[i]);
@@ -210,7 +209,7 @@ strToUpper (char *const str)
 }
 
 
-void flushStdin (void)
+void flush_stdin (void)
 {
     char ch; 
     do 
@@ -222,11 +221,11 @@ void flushStdin (void)
 
 
 __attribute__((noreturn)) void
-fatal (const char *const errMsg)
+fatal (const char *const emsg)
 {
-    clearConsole ();
+    clear_console ();
     
-    fprintf (stderr, "\n\n\t\tFailed while %s!", errMsg);
+    fprintf (stderr, "\n\n\t\tFailed while %s!", emsg);
     fflush (stderr);
     
     perror ("\n\n\t\tERROR");
@@ -234,7 +233,7 @@ fatal (const char *const errMsg)
     
     pause ();
 
-    clearConsole ();
+    clear_console ();
     exit (EXIT_FAILURE);
 }
 
